@@ -1,8 +1,8 @@
 # Sprites & Textures — Asset & Tooling Library
 
-A broad, exhaustively-researched reference library of **where to get** and **how to make, process, and ship** 2D sprites and 2D/3D textures for game and graphics development.
+A broad, exhaustively-researched reference library of **where to get** and **how to make, process, and ship** game and graphics assets — 2D sprites, 2D/3D textures, 3D models, fonts & icons, audio, and VFX/shaders.
 
-> **How this was built.** Compiled from nine parallel web-research sweeps (June 2026), one per domain below. Every link was checked by the researching agent to resolve to a real, current resource — no invented URLs. Pricing, licenses, and product status change; treat figures as "as of mid-2026" and re-verify license terms before shipping. Nothing here is legal advice (see [§9](#9-curated-lists-cc0-hubs--licensing-guide)).
+> **How this was built.** Compiled from thirteen parallel web-research sweeps (June 2026), one per domain below. Every link was checked by the researching agent to resolve to a real, current resource — no invented URLs. Pricing, licenses, and product status change; treat figures as "as of mid-2026" and re-verify license terms before shipping. Nothing here is legal advice (see [§9](#9-curated-lists-cc0-hubs--licensing-guide)).
 
 ---
 
@@ -31,6 +31,13 @@ A broad, exhaustively-researched reference library of **where to get** and **how
 7. [AI-Powered Sprite & Texture Generation](#7-ai-powered-sprite--texture-generation) — generative tools (+ licensing caveats)
 8. [Runtime Frameworks & Engines](#8-runtime-frameworks--engines-sprites--textures-in-code) — load/render sprites & textures in code
 9. [Curated Lists, CC0 Hubs & Licensing Guide](#9-curated-lists-cc0-hubs--licensing-guide) — meta-resources and how to stay legal
+
+*Extended asset categories:*
+
+10. [3D Models & Meshes](#10-3d-models--meshes) — model sources, formats, and the glTF pipeline
+11. [Fonts, Bitmap Fonts & Icon Systems](#11-fonts-bitmap-fonts--icon-systems) — type, bitmap-font/SDF tools, icons, emoji
+12. [Game Audio — Sound Effects, Music & Tools](#12-game-audio--sound-effects-music--tools) — SFX/music sources, editors, middleware
+13. [VFX, Particles & Shaders](#13-vfx-particles--shaders) — particle/VFX editors, shader tools & learning
 - [Appendix: End-to-End Workflow Recipes](#appendix-end-to-end-workflow-recipes)
 
 ---
@@ -487,6 +494,231 @@ Meta-resources that aggregate everything, plus a practical licensing primer so y
 
 ---
 
+## 10. 3D Models & Meshes
+
+Ready-made 3D assets, the interchange formats that move them between tools, and the open-source pipeline that converts, validates, and optimizes them. (Texturing tools and texture libraries are in [§2](#2-pbr--3d-texture--material-libraries) and [§4](#4-texture--material-authoring-tools).)
+
+### CC0 / free model sources
+- **[Poly Haven](https://polyhaven.com/models)** — Community-funded scanned/modeled assets as Blender, FBX, glTF, and USD with up to 8K textures; no login or paywall. *CC0 · models/HDRIs/textures · [license](https://polyhaven.com/license).*
+- **[Quaternius](https://quaternius.com/)** — Thousands of stylized low-poly packs (characters, nature, vehicles) + a Universal Animation Library; FBX/OBJ/glTF. *CC0 · game-ready packs · also on [itch.io](https://quaternius.itch.io/).*
+- **[Kenney](https://kenney.nl/assets/category:3D)** — 40k+ assets incl. modular 3D kits (city, platformer, nature, prototyping); excellent placeholders. *CC0 · 3D kits/sprites/audio · commercial OK.*
+- **[Poly Pizza](https://poly.pizza/)** — Independent successor to the defunct Google Poly (shut June 30 2021); thousands of hand-picked low-poly models + a free real-time API. *Mix of CC0 and CC-BY (filterable) · low-poly · [press](https://poly.pizza/docs/press).*
+- **[Sketchfab — Free models](https://sketchfab.com/features/free-3d-models)** — 1M+ downloadable Creative Commons models (incl. 2,000+ CC0); most are CC-BY (attribution), not CC0. *CC-BY / CC0 (per-model) · all categories · [CC guide](https://sketchfab.com/blogs/community/an-introduction-to-creative-commons-licenses/).*
+- **[BlenderKit](https://www.blenderkit.com/)** — 130k+ assets browsable from inside Blender via the official add-on; ~47% free (17k+ models). *CC0 & RF (free tier) · models/materials/HDRIs · [licenses](https://www.blenderkit.com/docs/licenses/).*
+- **[Free3D](https://free3d.com/)** — 15k+ user-uploaded free models (plus premium) in .blend/.obj/.c4d/.3ds/.max/.ma. *Per-model Personal Use / RF (read each listing) · free + paid.*
+- **[Clara.io Library](https://clara.io/library)** — 100k+ free models in OBJ/Blend/STL/FBX/DAE/Three.js (cloud editor shut Dec 31 2022; library remains). *Per-model flexible licenses · legacy service.*
+
+### Marketplaces & rigged-character sources
+- **[Fab](https://www.fab.com/)** — Epic's unified marketplace (successor to Unreal Marketplace + Sketchfab Store) and the new home of **Quixel Megascans**. Free assets rotate weekly; Megascans became paid in 2025 (from $0.99). *Fab Standard License (engine-agnostic) · free + paid · [purchasing docs](https://dev.epicgames.com/documentation/en-us/fab/purchasing-and-downloading-assets-in-fab).*
+- **[Adobe Mixamo](https://www.mixamo.com/)** — Free auto-rigger + huge mocap animation library; upload a humanoid mesh and get rigged animations in-browser (bipedal humanoids only). *RF for any project · rigged characters + mocap · [FAQ](https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html).*
+- **[Ready Player Me](https://readyplayer.me/)** — Cross-app avatar system built on glTF/GLB; every avatar is a unique GLB URL with optional Draco/meshopt compression. *Proprietary platform terms · GLB avatars · [docs](https://docs.readyplayer.me/).*
+- **[TurboSquid](https://www.turbosquid.com/)** — Long-running premium marketplace for film/games/AR-VR/product viz. *RF EULA (no ongoing royalties) · free + paid, all formats.*
+- **[CGTrader](https://www.cgtrader.com/)** — 2M+ models with flexible RF/Editorial licensing and 150k+ free models. *RF/Editorial (per listing) · free + paid · [free models](https://www.cgtrader.com/free-3d-models).*
+
+### Research / cultural open datasets
+- **[Objaverse / Objaverse-XL](https://objaverse.allenai.org/)** — AI2's research corpus of 10M+ 3D objects (XL ~100× larger than prior datasets) for generative-3D / reconstruction training. *Dataset ODC-By v1.0; objects keep own licenses · ML research · [repo](https://github.com/allenai/objaverse-xl).*
+- **[Smithsonian Open Access 3D](https://3d.si.edu/cc0)** — 2,000+ scanned museum objects (OBJ, glTF); part of the 5.1M-item Open Access release. *CC0 (items marked CC0) · cultural-heritage scans · [Open Access](https://www.si.edu/openaccess).*
+- **[NASA 3D Resources](https://science.nasa.gov/3d-resources/)** — Spacecraft, rovers, satellites, and textures from NASA missions. *Free / no copyright (see NASA media guidelines) · [GitHub](https://github.com/nasa/NASA-3D-Resources).*
+- **[Thingiverse](https://www.thingiverse.com/)** — 4M+ community designs, primarily STL, print-oriented (acquired by MyMiniFactory 2026; existing free models stay free). *Mostly Creative Commons (many NC) · print STL.*
+- **[Printables](https://www.printables.com/)** — Prusa Research's clean print-model repository with high-quality free STL/3MF. *Creative Commons (per listing) · print-oriented · free.*
+
+### 3D interchange formats — quick reference
+
+| Format | Ext | Strengths | Typical use |
+|---|---|---|---|
+| **glTF / GLB** | `.gltf` / `.glb` | Open Khronos standard, compact, PBR + skinning + animation; the "JPEG of 3D" | Runtime delivery: web/WebGL, AR/VR, engines |
+| **FBX** | `.fbx` | Rich: meshes, skeletal anim, blendshapes, cameras, lights; ubiquitous | DCC ↔ engine transfer; proprietary (Autodesk) |
+| **OBJ + MTL** | `.obj` / `.mtl` | Dead-simple, human-readable, universal | Static single meshes; no animation/rig |
+| **USD / USDZ** | `.usd` / `.usdz` | Composable scene graph, layering, huge-scene scale; USDZ = AR-ready zip | Film/VFX (Pixar), Apple AR, e-commerce |
+| **COLLADA** | `.dae` | XML interchange (Khronos); geometry, materials, animation | Legacy DCC interchange; SketchUp |
+| **STL** | `.stl` | Surface triangles only — no color/material | 3D printing, CAD prototyping |
+| **PLY** | `.ply` | Vertices + faces + per-vertex color/attributes | 3D scans, point clouds, photogrammetry |
+| **Alembic** | `.abc` | Baked per-frame geometry cache (deformation without the rig) | VFX/animation interchange |
+| **VRM** | `.vrm` | glTF 2.0 ext with a standardized humanoid rig + expressions | VTubing, VR/metaverse avatars |
+
+### Model pipeline tools (convert, validate, optimize, compress)
+- **[Blender](https://www.blender.org/)** — Free import/export hub: reads/writes glTF, FBX, OBJ, USD, DAE, STL, PLY, Alembic — doubles as a universal converter and cleanup tool. *OSS (GPL) · [glTF I/O manual](https://docs.blender.org/manual/en/latest/addons/import_export/scene_gltf2.html).*
+- **[glTF-Transform](https://gltf-transform.dev/)** — The go-to glTF 2.0 SDK + CLI for JS/TS: prune, dedup, weld, resample animations, resize/compress textures (KTX2/WebP), apply Draco/meshopt. *OSS (MIT) · [repo](https://github.com/donmccurdy/glTF-Transform).*
+- **[meshoptimizer + gltfpack](https://meshoptimizer.org/)** — zeux's mesh-optimization library; `gltfpack` shrinks glTF via meshopt vertex/index compression (a Draco alternative), LOD simplification, and KTX2/WebP texture compression. *OSS (MIT) · [gltfpack docs](https://meshoptimizer.org/gltf/).*
+- **[Draco](https://github.com/google/draco)** — Google's mesh/point-cloud geometry compression, standardized in glTF as `KHR_draco_mesh_compression`; supported in three.js/Babylon/Cesium. *OSS (Apache-2.0) · [project](https://google.github.io/draco/).*
+- **[assimp (Open Asset Import Library)](https://github.com/assimp/assimp)** — C/C++ library loading 50+ formats into one clean data structure, with export + post-processing (triangulate, gen normals/tangents). Bindings for C#, Python, Java. *OSS (BSD-3-Clause) · [site](https://www.assimp.org/).*
+- **[FBX2glTF](https://github.com/facebookincubator/FBX2glTF)** — Meta's CLI FBX→glTF converter (also on npm); optional Draco compression (Godot maintains an active [fork](https://github.com/godotengine/FBX2glTF)). *OSS (BSD-3-Clause).*
+- **[Khronos glTF Validator](https://github.khronos.org/glTF-Validator/)** — Drag-and-drop browser tool (validates locally, nothing uploaded) + `gltf-validator` npm package; checks assets against the glTF 2.0 spec. *OSS (Apache-2.0) · [repo](https://github.com/KhronosGroup/glTF-Validator).*
+
+> **Licensing caveat:** "Free" on Sketchfab, Free3D, CGTrader, and the print sites is per-listing — many models are CC-BY (attribution) or non-commercial, so check each download. Only Poly Haven, Quaternius, Kenney, and CC0-flagged Smithsonian items are blanket public-domain. Quixel Megascans on Fab is no longer free (since 2025). Clara.io's editor and Google Poly are defunct (Poly Pizza is the live successor). See [§9](#9-curated-lists-cc0-hubs--licensing-guide).
+
+---
+
+## 11. Fonts, Bitmap Fonts & Icon Systems
+
+Pixel/game fonts, the tools that turn fonts into sprite-sheet "bitmap fonts" and SDF/MSDF atlases for crisp real-time text, and icon libraries for game UI. (Bitmap fonts are literally sprite sheets; icons are core UI sprites.) The MSDF atlas generators here pair with [§5](#5-sprite-sheet--atlas-packers--2d-animation-tools).
+
+> **SIL Open Font License (OFL):** lets you use, embed, modify, and redistribute fonts freely — including in commercial products and games — but you may not sell the font *by itself*, and any "Reserved Font Name" can't be used by your modified versions without permission.
+
+### Font sources (incl. pixel/game fonts)
+- **[Google Fonts](https://fonts.google.com/)** — ~1,900+ open-licensed font families (web + downloadable TTF/variable fonts), incl. many pixel/game faces. *Mostly SIL OFL, some Apache 2.0 · free · [GitHub](https://github.com/google/fonts) · [docs](https://developers.google.com/fonts/faq).*
+- **[DaFont — Bitmap/Pixel](https://www.dafont.com/bitmap.php)** — Large browsable catalog of bitmap/pixel/screen fonts for retro/8-bit looks. *Per-font licenses (100% Free, Public Domain, GPL, OFL — check each) · mostly free · TTF.*
+- **[1001 Fonts — Pixel fonts](https://www.1001fonts.com/pixel-fonts.html)** — 500+ pixel fonts with clear per-font license badges; a [free-for-commercial filter](https://www.1001fonts.com/free-for-commercial-use-fonts.html) is available. *Per-font (many free-for-commercial / Public Domain) · TTF/OTF.*
+- **[FontStruct](https://fontstruct.com/)** — Free browser grid/tile editor to build bitmap-style fonts from blocks; exports ready-to-use TrueType. *Per-creator license (often CC) · free (ad-supported) · TTF.*
+- **[Lospec — pixel-font tutorials](https://lospec.com/pixel-art-tutorials/tags/fonts)** — Pixel-art hub with tutorials on making pixel fonts (rather than a hosted font list). *Free · tutorials/tools.*
+- **[itch.io — pixel-font assets](https://itch.io/game-assets/tag-pixel-font)** — Hundreds of indie pixel/bitmap fonts (monogram, Public Pixel, GB Studio packs); [free filter](https://itch.io/game-assets/free/tag-pixel-font). *Per-asset license · free & paid · TTF/PNG/bitmap.*
+- **[Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P)** — Classic 8px arcade bitmap font (by CodeMan38) based on 1980s Namco games. *SIL OFL · free · best at multiples of 8px.*
+- **[Pixel Operator](https://www.dafont.com/pixel-operator.font)** — Versatile libre pixel family (proportional + mono, many weights/sizes) by Jayvee Enaguas. *CC0 · free · TTF · [source](https://notabug.org/HarvettFox96/ttf-pixeloperator).*
+- **[m5x7](https://managore.itch.io/m5x7)** — Popular thin 5×7 pixel font by Daniel Linssen (accents/symbols); best at multiples of 16px. *Free to use (attribution appreciated) · TTF.*
+- **[m3x6](https://managore.itch.io/m3x6)** — Tiny 3×6 companion pixel font by Daniel Linssen for ultra-compact UI/dialogue. *Free to use (attribution appreciated) · TTF.*
+- **[Kenney Fonts](https://kenney.nl/assets/kenney-fonts)** — Pixel/game font pack from the CC0 game-asset maker Kenney. *CC0 · free · TTF.*
+
+### Bitmap-font & SDF/MSDF generation tools
+- **[AngelCode BMFont](https://www.angelcode.com/products/bmfont/)** — The original Windows bitmap-font generator; rasterizes TTF/OTF to sprite-sheet pages + a `.fnt` descriptor; Unicode, 8/32-bit output (TGA/PNG/DDS), and SDF export. *Freeware · Windows · defines the de-facto BMFont format · [docs](https://www.angelcode.com/products/bmfont/documentation.html).*
+- **[Hiero](https://libgdx.com/wiki/tools/hiero)** — libGDX's cross-platform bitmap-font packer; rasterizes TTFs with shadow/outline/glow effects and exports the AngelCode `.fnt` format. *OSS (Apache 2.0) · JVM.*
+- **[fontbm](https://github.com/vladimirgamalyan/fontbm)** — BMFont-compatible, cross-platform command-line generator built on FreeType2; great for build pipelines/CI. *OSS (MIT) · outputs `.fnt` + PNG.*
+- **[msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml)** — Node CLI converting TTF to multi-channel SDFs + AngelCode `.fnt` (XML/txt/JSON) via msdfgen. *OSS (MIT) · [npm](https://www.npmjs.com/package/msdf-bmfont-xml) · [web tool](https://github.com/donmccurdy/msdf-bmfont-web).*
+- **[msdfgen](https://github.com/Chlumsky/msdfgen)** — Viktor Chlumský's foundational multi-channel SDF generator (library/CLI) that preserves sharp corners for scalable real-time text. *OSS (MIT) · C++.*
+- **[msdf-atlas-gen](https://github.com/Chlumsky/msdf-atlas-gen)** — Builds compact MSDF font atlases from TTF/OTF subsets + layout metadata (Artery Font/CSV/JSON). *OSS (MIT) · CLI.* (Also in [§5](#5-sprite-sheet--atlas-packers--2d-animation-tools).)
+- **[Glyph Designer](https://www.71squared.com/glyphdesigner)** — Polished commercial bitmap-font editor with rich effects, custom glyph images, and 15+ export presets; macOS + a [Windows GDX edition](https://www.71squared.com/gdx). *Paid · AngelCode-compatible output.*
+- **[ShoeBox — bitmap-font mode](https://renderhjs.net/shoebox/bitmapFont.htm)** — Free Adobe AIR toolbox producing AngelCode `.fnt` with Photoshop styling (also a sprite packer — see [§5](#5-sprite-sheet--atlas-packers--2d-animation-tools)). *Freeware · cross-platform.*
+- **[Littera](https://kvazars.com/littera/)** — Web-based bitmap-font generator (AngelCode format) with glow/shadow/outline + distance-field. *Free · web · note: built in Flash/AS3, so it may not run in modern browsers.*
+- **[SnowB Bitmap Font](https://snowb.org/)** — Modern free in-browser generator (TTF/OTF/WOFF → bitmap) with gradients/effects; exports Text/XML/Binary/JSON/C-header and MSDF-atlas JSON (SDF/PSDF/MSDF/MTSDF via msdfgen WASM). *Free, runs locally · [docs](https://snowb.org/en/docs/) · [source](https://github.com/SilenceLeo/snowb-bmf).*
+
+### Icon libraries & systems
+- **[game-icons.net](https://game-icons.net/)** — 4,000+ monochrome SVG/PNG icons purpose-built for games/RPGs (weapons, spells, creatures, dungeon, cards); recolorable in-browser. *CC-BY 3.0 (attribution) · free · [about/license](https://game-icons.net/about.html).* (Also in [§1](#1-2d-sprite--game-art-asset-sources).)
+- **[Iconify](https://iconify.design/)** — Universal icon framework + aggregator unifying 200+ open sets (~300k icons) behind one API with React/Vue/Svelte/web components. *MIT framework (sets keep own licenses) · [search](https://icon-sets.iconify.design/) · [docs](https://iconify.design/docs/icons/).*
+- **[Font Awesome](https://fontawesome.com/)** — The iconic SVG/font/CSS toolkit; Free tier has 2,000+ icons (Pro is paid). *Free: CC-BY 4.0 (SVG), SIL OFL (fonts), MIT (code) · [GitHub](https://github.com/FortAwesome/Font-Awesome).*
+- **[Material Symbols / Icons](https://fonts.google.com/icons)** — Google's huge UI icon system; Symbols ship as variable fonts (fill/weight/grade/optical-size) + SVGs. *Apache 2.0 · [guide](https://developers.google.com/fonts/docs/material_symbols) · [GitHub](https://github.com/google/material-design-icons).*
+- **[Lucide](https://lucide.dev/)** — Community-maintained 1,600+ stroke-based icons (a modern Feather fork) with React/Vue/Svelte packages. *ISC · [GitHub](https://github.com/lucide-icons/lucide).*
+- **[Tabler Icons](https://tabler.io/icons)** — 6,000+ consistent 24×24 / 2px-stroke icons; SVG, icon font, and framework packages. *MIT (no attribution) · [GitHub](https://github.com/tabler/tabler-icons).*
+- **[Feather](https://feathericons.com/)** — Minimal 280+ icons on a 24×24 grid by Cole Bemis (the original behind Lucide). *MIT · [GitHub](https://github.com/feathericons/feather).*
+- **[Phosphor Icons](https://phosphoricons.com/)** — Flexible 1,200+ family in six weights (thin→fill + duotone) with many framework packages. *MIT · [GitHub](https://github.com/phosphor-icons).*
+- **[Heroicons](https://heroicons.com/)** — Hand-crafted icons by the Tailwind CSS team (outline/solid/mini) with React/Vue libs. *MIT · [GitHub](https://github.com/tailwindlabs/heroicons).*
+- **[Boxicons](https://boxicons.com/)** — 3,000+ web-friendly icons in regular/solid/logo styles. *CC-BY 4.0 · SVG/PNG/web font.*
+- **[Remix Icon](https://remixicon.com/)** — 3,200+ neutral system symbols (outlined + filled) on a 24×24 grid. *Apache 2.0 · SVG/font · [GitHub](https://github.com/Remix-Design/RemixIcon).*
+- **[The Noun Project](https://thenounproject.com/)** — Massive crowd-sourced icon marketplace; free under CC-BY (attribution) or royalty-free via paid plan. *CC-BY or RF (paid) · [license info](https://help.thenounproject.com/hc/en-us/articles/200509798).*
+
+### Open emoji sets
+- **[Twemoji](https://github.com/jdecked/twemoji)** — Twitter's open emoji set, community-maintained (jdecked fork); flat colorful SVG/PNG, full Unicode. *Graphics CC-BY 4.0, code MIT · [demo](https://jdecked.github.io/twemoji/).*
+- **[OpenMoji](https://openmoji.org/)** — 4,000+ community-designed emoji in one style, with colored + outlined variants and skin tones. *Graphics CC-BY-SA 4.0, code LGPL-3.0 · [GitHub](https://github.com/hfg-gmuend/openmoji).*
+- **[Noto Emoji](https://github.com/googlefonts/noto-emoji)** — Google's Noto emoji fonts (color + monochrome) for broad Unicode coverage and cross-platform consistency. *Fonts SIL OFL 1.1, tools/images Apache 2.0.*
+
+---
+
+## 12. Game Audio — Sound Effects, Music & Tools
+
+Sound-effect and music sources, the editors and trackers to make audio, and the middleware/libraries to play it in-engine. **Audio licensing is often per-asset and attribution-heavy — read each "Licensing note".**
+
+### Sound-effect & music libraries
+- **[Freesound](https://freesound.org/)** — Massive collaborative database of user-uploaded sounds and field recordings. *Free · per-sound license varies (CC0, CC-BY, CC-BY-NC); free account required · [license help](https://freesound.org/help/faq/).*
+  - **Licensing note:** each sound carries its own CC license — check every file. CC-BY/CC-BY-NC require crediting the uploader; CC-BY-NC bars commercial use.
+- **[Sonniss GDC Game Audio Bundle](https://sonniss.com/gameaudiogdc/)** — Annual multi-gigabyte bundles of pro SFX, released for GDC; 200GB+ across years in the [community archive](https://gdc.sonniss.com/). *Free · royalty-free, no attribution, unlimited lifetime/commercial use · AI/ML training prohibited.*
+- **[BBC Sound Effects](https://sound-effects.bbcrewind.co.uk/)** — 16,000+ archival sound effects in WAV from the BBC's library. *Free · RemArc License · [terms](https://sound-effects.bbcrewind.co.uk/licensing).*
+  - **Licensing note:** RemArc is personal/educational/research (non-commercial) by default — commercial projects need separate BBC permission.
+- **[OpenGameArt — Audio](https://opengameart.org/art-search-advanced?field_art_type_tid%5B%5D=13)** — Community game-asset site with music and SFX packs. *Free · per-asset license (CC0, CC-BY, CC-BY-SA, GPL).*
+  - **Licensing note:** mixed licenses; CC-BY/SA require credit and GPL/SA carry copyleft/share-alike obligations.
+- **[Kenney — Audio](https://kenney.nl/assets/category:Audio)** — Polished, game-ready SFX packs (UI, impact, RPG, sci-fi, digital, jingles, voiceover) in WAV/OGG/M4A. *Free · CC0, no attribution.*
+- **[Pixabay (audio)](https://pixabay.com/sound-effects/)** — 120,000+ SFX plus a large royalty-free [music library](https://pixabay.com/music/). *Free · Pixabay Content License, no attribution, commercial OK · [license](https://pixabay.com/service/license-summary/).*
+- **[Zapsplat](https://www.zapsplat.com/)** — 150,000+ SFX and music; MP3 on free tier, WAV + no-credit on paid. *Free w/ account (attribution) or paid · [standard license](https://www.zapsplat.com/license-type/standard-license/).*
+  - **Licensing note:** free members must credit "ZapSplat"; only a small CC0 subset is attribution-free.
+- **[Mixkit](https://mixkit.co/free-sound-effects/)** — Curated free SFX and music by Envato; no sign-up. *Free · Mixkit License, no attribution · [license](https://mixkit.co/license/).*
+  - **Licensing note:** ⚠️ music may NOT be used in video games (or CDs/DVDs, TV/radio) — a key restriction for game devs.
+- **[Free To Use Sounds](https://www.freetousesounds.com/)** — Large field-recording SFX libraries from world travel. *Free (paid bulk packs) · attribution (website link) for free downloads · [license](https://www.freetousesounds.com/license-agreement).*
+- **[Soundsnap](https://www.soundsnap.com/)** — 500,000+ professional SFX with unlimited downloads. *Paid subscription · perpetual royalty-free, no credit · [license](https://www.soundsnap.com/license).*
+- **[Free Music Archive](https://freemusicarchive.org/)** — Long-running royalty-free music repository (WFMU origins). *Free · per-track CC license · [license guide](https://freemusicarchive.org/License_Guide).*
+  - **Licensing note:** most tracks are CC-BY/-NC/-SA/-ND — verify each; attribution generally required.
+- **[ccMixter](https://ccmixter.org/)** — Community remix/sample library (loops, acapellas, stems); see the [commercial-use section](http://dig.ccmixter.org/free). *Free · per-track CC (many NC) · attribution usually required.*
+- **[Incompetech (Kevin MacLeod)](https://incompetech.com/music/royalty-free/)** — 2,000+ royalty-free library tracks across genres. *Free under CC-BY 4.0, or paid no-attribution license (~$30) · [FAQ](https://incompetech.com/music/royalty-free/faq.html).*
+  - **Licensing note:** free use REQUIRES crediting Kevin MacLeod, e.g. "Title — Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0."
+- **[Bensound](https://www.bensound.com/)** — Royalty-free music for video/games. *Free tier (attribution) or paid per-track / All-Access · [pricing](https://www.bensound.com/pricing).*
+- **[Patrick de Arteaga](https://patrickdearteaga.com/)** — Royalty-free game/chiptune music. *Free under CC-BY 4.0, or Pro/Broadcast licenses · [licensing](https://patrickdearteaga.com/en/licensing/).*
+- **[Soundimage.org (Eric Matyas)](https://soundimage.org/)** — 2,500+ original music tracks plus SFX in many genres. *Free with attribution, or non-attribution license ($30/track, $5/SFX) · [attribution info](https://soundimage.org/attribution-info/).*
+- **[Uppbeat](https://uppbeat.io/)** — Creator-focused royalty-free music + SFX with YouTube-safe licensing. *Free tier (3 dl/month, credit) or paid · [how licenses work](https://uppbeat.io/blog/royalty-free-and-copyright-free-music/uppbeats-music-licenses).*
+- **[itch.io — game audio](https://itch.io/game-assets/tag-audio)** — Huge marketplace of indie music/SFX packs ([music](https://itch.io/game-assets/tag-music), [sound-effects](https://itch.io/game-assets/tag-sound-effects)). *Free + paid · per-asset license (many CC0/RF) — check each.*
+- **[Tabletop Audio](https://tabletopaudio.com/)** — Original 10-minute ambiences and music for tabletop RPGs. *Free (donation-supported) · personal/tabletop use; contact for other licensing.*
+- **[GameSounds.xyz](https://gamesounds.xyz/)** — Curated directory of royalty-free / public-domain game music and sounds (incl. BBC and Sonniss mirrors). *Free · per-folder license file — read each.*
+
+### SFX generators (retro/procedural)
+- **[Bfxr](https://www.bfxr.net/)** — Browser/desktop generator for retro 8-bit SFX (lasers, explosions, pickups), an elaborated remake of sfxr; exports WAV. *Free · OSS · sounds free for any use.*
+- **[jsfxr / sfxr.me](https://sfxr.me/)** — HTML5 port of DrPetter's sfxr; coin/laser/explosion/powerup presets, usable as a [JS library](https://github.com/chr15m/jsfxr). *Free · OSS (MIT).*
+- **[ChipTone (SFB Games)](https://sfbgames.itch.io/chiptone)** — Advanced free SFX tool by Tom Vian with waveform feedback, envelopes, filters, and modulation. *Free · output is CC0.*
+- **[rFXGen](https://raylibtech.itch.io/rfxgen)** — sfxr-based generator by raylib's Ramon Santamaria; exports WAV/RAW and C header arrays, with CLI batch mode ([source](https://github.com/raysan5/rfxgen)). *Free · OSS (zlib).*
+- **[as3sfxr](https://www.superflashbros.net/as3sfxr/)** — Thomas Vian's ActionScript port of sfxr (the lineage behind Bfxr/ChipTone); 4 oscillators, 7 generators, WAV export. *Free · OSS.*
+
+### Music & tracker tools
+- **[Bosca Ceoil](https://terrycavanagh.itch.io/bosca-ceoil)** — Terry Cavanagh's beginner-friendly loop-based music maker with 100+ MIDI/chiptune presets. *Free · OSS · [source](https://github.com/TerryCavanagh/boscaceoil).*
+- **[Bosca Ceoil Blue](https://yurisizov.itch.io/boscaceoil-blue)** — Modern Godot-engine rework (Win/macOS/Linux/web); exports WAV, MIDI, XM. *Free · OSS · [source](https://github.com/YuriSizov/boscaceoil-blue).*
+- **[BeepBox](https://www.beepbox.co/)** — Online tool for sketching and sharing instrumental/chiptune music. *Free · OSS (MIT).*
+- **[FamiStudio](https://famistudio.org/)** — DAW-style NES/Famicom chiptune editor (piano-roll, no hex), FamiTracker import, many expansions; Win/macOS/Linux/Android. *Free · OSS (MIT) · [source](https://github.com/BleuBleu/FamiStudio).*
+- **[OpenMPT](https://openmpt.org/)** — Mature Windows module tracker editing IT/XM/S3M/MOD with VST and ASIO support. *Free · OSS (BSD-3-Clause) · [features](https://openmpt.org/features).*
+- **[LMMS](https://lmms.io/)** — Cross-platform DAW with piano-roll, beat/bassline editor, 15+ synths, VST2 + SoundFont2; exports WAV/FLAC/OGG/MP3. *Free · OSS (GPL-2.0+) · [source](https://github.com/LMMS/lmms).*
+
+### Audio editors (DAWs)
+- **[Audacity](https://www.audacityteam.org/)** — Ubiquitous multitrack audio editor/recorder (WAV/AIFF/MP3/OGG/FLAC) with effects and LADSPA/VST/Nyquist plug-ins. *Free · OSS (GPLv3) · [source](https://github.com/audacity/audacity).*
+- **[Ocenaudio](https://www.ocenaudio.com/)** — Fast, lightweight cross-platform editor with real-time effect preview, VST support, and spectrogram editing. *Free (freeware, closed-source) · Win/macOS/Linux.*
+- **[REAPER](https://www.reaper.fm/)** — Full-featured pro DAW with a 60-day free evaluation. *Paid · ~$60 discounted (personal / <$20k revenue) or ~$225 commercial · [purchase](https://www.reaper.fm/purchase.php).*
+- **[Cakewalk Sonar](https://www.cakewalk.com/sonar/)** — BandLab's revived flagship Windows DAW: unlimited tracks, 64-bit engine, VST3/ARA. *Free basic tier (BandLab account); premium via paid BandLab membership.*
+- **[Ardour](https://ardour.org/)** — Professional cross-platform DAW: unlimited tracks, non-destructive editing, mixing, MIDI, LV2/VST/AU. *Free if self-compiled; prebuilt binaries need a one-time payment/donation · OSS (GPL).*
+- The major paid commercial DAWs — **FL Studio**, **Ableton Live**, **Apple Logic Pro**, **Steinberg Cubase** — are proprietary industry standards for game-music scoring.
+
+### Audio middleware & engine libraries
+- **[FMOD Studio](https://www.fmod.com/studio)** — Leading adaptive game-audio middleware with Unity/Unreal integration. *Free for indies (revenue <$200k & budget <$500k); otherwise ~$2k–$15k per title · [info](https://www.fmod.com/studio).*
+- **[Audiokinetic Wwise](https://www.audiokinetic.com/en/wwise/pricing/)** — AAA-grade interactive audio engine (spatial audio, interactive music, dynamic mixing). *Free Indie license (budget ≤$250k) + free non-commercial; tiered Pro/Premium above · [pricing](https://www.audiokinetic.com/en/wwise/pricing/for-games/).*
+  - **Licensing note:** a separate Wwise license is required per platform shipped.
+- **[CRI ADX / ADX LE](https://game.criware.jp/en/products/adx/)** — Widely used (esp. Japan) game audio middleware supporting Unity/UE/cocos2d-x. *[ADX LE](https://game.criware.jp/en/products/adx-le_en/) free for small studios (company & game revenue each <¥10M); fees apply above.*
+- **[miniaudio](https://miniaud.io/)** — Single-file C/C++ playback & capture library, no dependencies, all major platforms; WAV/FLAC/MP3 decoding, mixing, 3D spatialization. *Free · public domain or MIT-0 · [source](https://github.com/mackron/miniaudio).*
+- **[SoLoud](https://solhsa.com/soloud/)** — Easy portable C/C++ game audio engine with an sfxr generator, speech synth, MOD/XM playback, and many bindings. *Free · OSS (zlib/libpng) · [source](https://github.com/jarikomppa/soloud).*
+- **[OpenAL Soft](https://openal-soft.org/)** — Software implementation of the OpenAL 3D audio API: distance attenuation, Doppler, HRTF, environmental reverb (EFX). *Free · OSS (LGPL) · [source](https://github.com/kcat/openal-soft).*
+- **[libsndfile](https://libsndfile.github.io/libsndfile/)** — C library for reading/writing audio formats (WAV, AIFF, FLAC, Ogg/Vorbis…) with conversion. *Free · OSS (LGPL-2.1+) · [source](https://github.com/libsndfile/libsndfile).*
+
+---
+
+## 13. VFX, Particles & Shaders
+
+Tools to author real-time visual effects and particle systems, sources of sprite/VFX asset packs, and shader learning/resource hubs.
+
+### Particle & VFX editors (engine-integrated)
+- **[Unity VFX Graph](https://unity.com/features/graphics)** — Node-based GPU particle system for large-scale (millions-of-particles) real-time effects; works with URP/HDRP. *Unity · free with Unity · [docs](https://docs.unity3d.com/Manual/VFXGraph.html).*
+- **[Unity Built-in Particle System (Shuriken)](https://docs.unity3d.com/Manual/class-ParticleSystem.html)** — Unity's classic CPU-driven particle module; broad platform support, good for smaller effects. *Unity · free with Unity.*
+- **[Unreal Engine Niagara](https://dev.epicgames.com/documentation/en-us/unreal-engine/niagara-visual-effects)** — Modern, highly programmable node/module VFX system in UE4/UE5 (CPU & GPU sims). *Unreal · free with Unreal.*
+- **[Unreal Cascade (legacy)](https://dev.epicgames.com/documentation/en-us/unreal-engine/cascade-particle-systems)** — Older UE particle editor, superseded by Niagara (with an official converter plugin). *Unreal · free with Unreal.*
+- **[Godot GPUParticles2D / 3D](https://docs.godotengine.org/en/stable/classes/class_gpuparticles3d.html)** — GPU-driven particle nodes configured via `ParticleProcessMaterial` or a custom `ShaderMaterial`; CPUParticles fallbacks exist. *Godot · OSS (MIT) · [process-material docs](https://docs.godotengine.org/en/stable/classes/class_particleprocessmaterial.html).*
+- **[Cocos Creator Particle System](https://docs.cocos.com/creator/3.8/manual/en/particle-system/index.html)** — Built-in 2D (`ParticleSystem2D`, plist support) and modular 3D particle systems. *Cocos · OSS (engine) · [2D particles](https://docs.cocos.com/creator/3.8/manual/en/particle-system/2d-particle/2d-particle.html).*
+- **[Phaser Particle Emitter](https://docs.phaser.io/phaser/concepts/gameobjects/particles)** — Built-in 2D particle emitter (explode/flow modes, per-particle props, bounds, callbacks). *Phaser / web · OSS (MIT) · [API](https://docs.phaser.io/api-documentation/class/gameobjects-particles-particleemitter).*
+
+### Particle & VFX editors (standalone / web / cross-engine)
+- **[Effekseer](https://effekseer.github.io/en/)** — Free standalone editor authoring `.efk` 2D/3D effects with runtimes for Unity, Unreal, Godot, Cocos2d-x, DXLib, and DirectX/OpenGL/Vulkan/Metal/WebGL. *Cross-engine · OSS (MIT) · [docs](https://effekseer.github.io/Help_Tool/en/).*
+- **[libGDX Particle Editor (Flame)](https://libgdx.com/wiki/tools/2d-particle-editor)** — Official GUI editor for tuning 2D (and 3D) particle effects in real time for libGDX. *libGDX / JVM · OSS (Apache-2.0) · [repo](https://github.com/libgdx/gdx-particle-editor).*
+- **[PixiJS particle-emitter](https://github.com/pixijs-userland/particle-emitter)** — Particle-system library for PixiJS (formerly `pixi-particles`), behavior-based config. *Pixi.js / web · OSS (MIT) · [docs](https://particle-emitter.pixijs.io/docs/).*
+- **[PixiJS particle-emitter Editor](https://github.com/pixijs/pixi-particles-editor)** — Interactive web editor to design and preview Pixi particle configs (use `upgradeConfig()` on older output). *Pixi.js / web · OSS · [getting started](https://www.pixiparticles.com/pixijs-particle-emitter/getting-started).*
+- **[three.quarks](https://github.com/Alchemist0823/three.quarks)** — General-purpose particle/VFX engine for Three.js (TypeScript) with a WYSIWYG [editor](https://quarks.art/) and JSON export. *Three.js / web · OSS (MIT).*
+- **[three-nebula](https://three-nebula.org/)** — WebGL particle-system engine for Three.js with a cross-platform GUI designer and JSON-loadable systems. *Three.js / web · OSS (MIT) · [repo](https://github.com/creativelifeform/three-nebula).*
+- **[Pixel FX Designer](https://codemanu.itch.io/particle-fx-designer)** — Standalone slider-driven 2D pixel-art particle tool exporting PNG spritesheets/GIFs; 1000+ particle assets. *Win/Mac (Steam & itch) · paid (~$15) · [Steam](https://store.steampowered.com/app/939360/Pixel_FX_Designer/).*
+- **[SpriteMancer](https://spritemancer.com/)** — All-in-one effect tool (particles, fluids, node graph, sprite animation) by CodeManu, successor to Pixel FX Designer. *Win/Mac (Steam & itch) · paid (Early Access) · [Steam](https://store.steampowered.com/app/1858750/SpriteMancer/).*
+
+### Sprite & VFX asset packs
+*More 2D-art creators are catalogued in [§1](#1-2d-sprite--game-art-asset-sources); these are a few verified VFX-focused examples.*
+- **[CodeManu — Free VFX Asset Pack](https://codemanu.itch.io/vfx-free-pack)** — 22 pixel-art effects (30/60fps). *2D sprite-sheets · CC0 (personal & commercial) · also [Free Pixel Effects Pack](https://codemanu.itch.io/pixelart-effect-pack).*
+- **[ansimuz — Magic & VFX packs](https://ansimuz.itch.io/)** — Crispy pixel-art explosion/magic VFX (Free Magic Pack 9 is free; larger collections paid). *2D sprite-sheets · free + paid.*
+- **[Pimen](https://pimen.itch.io/)** — Hand-drawn pixel-art spell/elemental VFX (40+ sets: fire, ice, thunder, wind…). *2D sprite-sheets · free + paid.*
+- **[JosephSeraph / Seraph Circle](https://seraphcircle.itch.io/)** — Pixel-art elemental/sci-fi VFX packs ("SC: Animation – Essentials" is free). *2D sprite-sheets · free + paid.*
+
+### Shader authoring tools
+- **[Unity Shader Graph](https://docs.unity3d.com/Packages/com.unity.shadergraph@latest/)** — Node-based visual shader editor for URP/HDRP. *Unity · free with Unity.*
+- **[Unreal Material Editor](https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-material-editor-user-guide)** — Node-graph material/shader authoring (expressions compiled to HLSL). *Unreal · free with Unreal · [materials docs](https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-materials).*
+- **[Godot Visual Shaders](https://docs.godotengine.org/en/stable/tutorials/shaders/visual_shaders.html)** — Graph-based shader editor (vertex/fragment/light) with live previews and custom nodes. *Godot · OSS (MIT) · [class ref](https://docs.godotengine.org/en/stable/classes/class_visualshader.html).*
+- **[SHADERed](https://shadered.org/)** — Full-featured cross-platform shader IDE with a step-through GLSL/HLSL debugger, compute/geometry shaders, render textures, and a plugin API. *Win/Linux/Web · OSS · [repo](https://github.com/dfranx/SHADERed).*
+- **[KodeLife](https://hexler.net/kodelife)** — Real-time GPU shader live-coding editor with audio/MIDI/gamepad inputs; GLSL, Metal, HLSL. *Win/Mac/Linux/iOS/Android · paid (free unlimited beta available) · [manual](https://hexler.net/kodelife/manual/introduction).*
+- **[Shadron](https://www.arteryengine.com/shadron/)** — GLSL-based procedural graphics editor for generating/processing images, animations, textures, and particles with live parameters. *Win/Mac/Linux (Steam) · paid · [docs](https://www.arteryengine.com/shadron/doc/).*
+- **[Synthclipse](https://synthclipse.sourceforge.net/)** — Eclipse-based GLSL prototyping IDE (FS/VS/GS/TS/CS) with Fragmentarium/Shadertoy/GLSL-Sandbox compatibility. *Win/Linux · OSS · [user guide](https://synthclipse.sourceforge.net/user_guide/shadertoy.html).*
+- **[ISF (Interactive Shader Format) Editor](https://isf.video/)** — GLSL+JSON shader format and free desktop editor (200+ bundled shaders) for portable, parameterized shaders. *Win/Mac · OSS · [docs](https://docs.isf.video/).*
+
+### Shader learning & resource hubs
+- **[Shadertoy](https://www.shadertoy.com/)** — Online community/playground for writing, sharing, and remixing GLSL fragment shaders with multi-pass and audio/video/VR inputs. *Web · free.*
+- **[GLSL Sandbox](https://glslsandbox.com/)** — Minimal in-browser fragment-shader editor and fork-and-remix gallery by mrdoob. *Web · OSS (MIT) · [repo](https://github.com/mrdoob/glsl-sandbox).*
+- **[The Book of Shaders](https://thebookofshaders.com/)** — Free step-by-step guide to fragment shaders (shaping functions, noise, patterns, raymarching) with live editors. *Web · free.*
+- **[Inigo Quilez — Articles](https://iquilezles.org/articles/)** — Deep reference articles on SDFs, raymarching, noise, distance functions, and procedural graphics math. *Web · free.*
+- **[Catlike Coding](https://catlikecoding.com/unity/tutorials/)** — In-depth written C#/shader/rendering tutorials for Unity (and Godot). *Free (Patreon-supported).*
+- **[Godot Shaders](https://godotshaders.com/)** — Community library of free 3D (spatial) and 2D (canvas-item) shaders plus snippets for Godot. *Godot · free.*
+
+---
+
 ## Appendix: End-to-End Workflow Recipes
 
 Concrete pipelines wiring the sections together.
@@ -515,6 +747,17 @@ Concrete pipelines wiring the sections together.
 **Recipe 4 — Headless asset-optimization step for CI**
 `ImageMagick`/`sharp` (normalize size/format) → `mozjpeg`/`oxipng`/`pngquant` (optimize) → `free-tex-packer-cli`/`TexturePacker` (atlas) → `basisu`/`toktx` (GPU-compress to KTX2). All four stages are scriptable and license-clean for build servers (§5, §6).
 
+**Recipe 5 — Optimize a 3D model for web/runtime**
+1. Grab or author a model (§10) — e.g. CC0 from **Poly Haven**/**Quaternius**, or rig a character with **Mixamo**.
+2. Export to **glTF/GLB** (the runtime standard) via **Blender** (§10).
+3. Validate with the **Khronos glTF Validator**; optimize with **glTF-Transform** or **gltfpack** — Draco/meshopt geometry compression + KTX2/WebP textures (§10, §6).
+4. Load in **Three.js**/**Babylon.js** with `GLTFLoader` + `KTX2Loader` (§8).
+
+**Recipe 6 — Royalty-free audio, legally**
+1. Pull CC0 SFX from **Kenney**/**Sonniss**; music from **Incompetech**/**Patrick de Arteaga** (§12).
+2. Track the per-asset license — **credit Kevin MacLeod** for Incompetech, check each **Freesound** file individually, and don't use **Mixkit** music in games (§12).
+3. Integrate via **FMOD**/**Wwise** (free indie tiers) or OSS **miniaudio**/**SoLoud** (§12).
+
 ---
 
-*Compiled 2026-06-03 via nine parallel web-research streams. Links verified at time of writing; product status, pricing, and licenses change — re-check terms before relying on them. Corrections and additions welcome.*
+*Compiled 2026-06-03 via thirteen parallel web-research streams. Links verified at time of writing; product status, pricing, and licenses change — re-check terms before relying on them. Corrections and additions welcome.*
