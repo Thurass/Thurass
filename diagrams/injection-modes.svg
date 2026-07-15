@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 884" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="aInk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0f172a"/>
+    </marker>
+    <marker id="aPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4527a0"/>
+    </marker>
+    <marker id="aOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#e65100"/>
+    </marker>
+  </defs>
+
+  <rect x="8" y="8" width="1264" height="868" rx="16" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Title -->
+  <text x="640" y="42" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">Injection Mode A (messages)  vs  Mode B (SwitchDesktop + SendInput)</text>
+  <text x="640" y="64" text-anchor="middle" font-size="12.5" fill="#64748b">Driving a hidden sandbox desktop (WinSta0\Sandbox) two ways — concurrent synthetic messages vs screen-stealing real input</text>
+
+  <!-- ============ PANEL FRAMES ============ -->
+  <rect x="24" y="76" width="608" height="784" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="648" y="76" width="608" height="784" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ============ HEADERS ============ -->
+  <rect x="24" y="76" width="608" height="48" rx="12" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="44" y="106" font-size="15.5" font-weight="700" fill="#0f172a">MODE A — Message injection</text>
+  <rect x="520" y="90" width="98" height="20" rx="10" fill="#ffffff" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="569" y="104" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1565c0">CONCURRENT</text>
+
+  <rect x="648" y="76" width="608" height="48" rx="12" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="668" y="106" font-size="15.5" font-weight="700" fill="#0f172a">MODE B — SwitchDesktop + SendInput</text>
+  <rect x="1120" y="90" width="118" height="20" rx="10" fill="#ffffff" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="1179" y="104" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4527a0">SCREEN-STEALING</text>
+
+  <!-- ============ SECTION 1 : input desktop ============ -->
+  <text x="44" y="150" font-size="13.5" font-weight="700" fill="#0f172a">① Which desktop holds the input role</text>
+  <text x="668" y="150" font-size="13.5" font-weight="700" fill="#0f172a">① Which desktop holds the input role</text>
+
+  <!-- A cards -->
+  <rect x="44" y="160" width="274" height="94" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <rect x="54" y="170" width="118" height="18" rx="9" fill="#1565c0"/>
+  <text x="113" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">VISIBLE · INPUT</text>
+  <text x="60" y="216" font-size="13" font-weight="700" fill="#0f172a">Default desktop</text>
+  <text x="60" y="236" font-size="10.5" fill="#334155">user's real apps — still active</text>
+
+  <rect x="338" y="160" width="274" height="94" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <rect x="348" y="170" width="66" height="18" rx="9" fill="#64748b"/>
+  <text x="381" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">HIDDEN</text>
+  <text x="354" y="216" font-size="13" font-weight="700" fill="#0f172a">WinSta0\Sandbox</text>
+  <text x="354" y="236" font-size="10.5" fill="#334155">driven off-screen, in parallel</text>
+
+  <circle cx="328" cy="207" r="14" fill="#ffffff" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="328" y="212" text-anchor="middle" font-size="15" font-weight="700" fill="#1565c0">∥</text>
+  <text x="44" y="274" font-size="11" fill="#475569">The input desktop is unchanged — the user never sees the sandbox.</text>
+
+  <!-- B cards -->
+  <rect x="668" y="160" width="274" height="94" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <rect x="678" y="170" width="66" height="18" rx="9" fill="#64748b"/>
+  <text x="711" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">HIDDEN</text>
+  <text x="684" y="216" font-size="13" font-weight="700" fill="#0f172a">Default desktop</text>
+  <text x="684" y="236" font-size="10.5" fill="#c62828">user is locked out</text>
+
+  <rect x="962" y="160" width="274" height="94" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+  <rect x="972" y="170" width="118" height="18" rx="9" fill="#4527a0"/>
+  <text x="1031" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">VISIBLE · INPUT</text>
+  <text x="978" y="216" font-size="13" font-weight="700" fill="#0f172a">WinSta0\Sandbox</text>
+  <text x="978" y="236" font-size="10.5" fill="#334155">promoted to input desktop</text>
+
+  <circle cx="952" cy="207" r="14" fill="#ffffff" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="952" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="#4527a0">⇄</text>
+  <text x="668" y="274" font-size="11" fill="#475569">SwitchDesktop makes the sandbox the input desktop — one per session; the flip is visible.</text>
+
+  <!-- ============ SECTION 2 : mechanism ============ -->
+  <text x="44" y="304" font-size="13.5" font-weight="700" fill="#0f172a">② How keystrokes &amp; clicks reach the sandbox</text>
+  <rect x="386" y="291" width="226" height="20" rx="10" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+  <text x="499" y="305" text-anchor="middle" font-size="10.5" font-weight="600" fill="#c62828">SendInput can't reach a hidden desktop</text>
+
+  <text x="668" y="304" font-size="13.5" font-weight="700" fill="#0f172a">② How keystrokes &amp; clicks reach the sandbox</text>
+  <rect x="998" y="291" width="238" height="20" rx="10" fill="#ede7f6" stroke="#4527a0" stroke-width="1.2"/>
+  <text x="1117" y="305" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4527a0">real input needs it to BE the input desktop</text>
+
+  <!-- A pipeline -->
+  <rect x="68" y="318" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="80" y="338" font-size="12.5" font-weight="700" fill="#0f172a">Worker thread · SetThreadDesktop(hSandbox)</text>
+  <text x="80" y="355" font-size="10.5" fill="#334155">bind to the hidden desktop before it owns any window or hook</text>
+  <line x1="328" y1="364" x2="328" y2="378" stroke="#e65100" stroke-width="2" marker-end="url(#aOrange)"/>
+
+  <rect x="68" y="382" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="80" y="402" font-size="12.5" font-weight="700" fill="#0f172a">EnumDesktopWindows(hSandbox) → HWNDs</text>
+  <text x="80" y="419" font-size="10.5" fill="#334155">top-level only — descend via EnumChildWindows to the leaf control</text>
+  <line x1="328" y1="428" x2="328" y2="442" stroke="#e65100" stroke-width="2" marker-end="url(#aOrange)"/>
+
+  <rect x="68" y="446" width="520" height="50" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="80" y="466" font-size="12.5" font-weight="700" fill="#0f172a">PostMessage / SendMessageTimeout</text>
+  <text x="80" y="483" font-size="10.5" fill="#334155">WM_KEYDOWN·WM_CHAR·WM_KEYUP · WM_MOUSEMOVE·WM_*BUTTON* — built lParam, client coords</text>
+
+  <!-- B pipeline -->
+  <rect x="692" y="318" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="704" y="338" font-size="12.5" font-weight="700" fill="#0f172a">SwitchDesktop(hSandbox)</text>
+  <text x="704" y="355" font-size="10.5" fill="#334155">requires DESKTOP_SWITCHDESKTOP — sandbox becomes the one input desktop</text>
+  <line x1="952" y1="364" x2="952" y2="378" stroke="#e65100" stroke-width="2" marker-end="url(#aOrange)"/>
+
+  <rect x="692" y="382" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="704" y="402" font-size="12.5" font-weight="700" fill="#0f172a">Injector thread now sits on the input desktop</text>
+  <text x="704" y="419" font-size="10.5" fill="#334155">attached via SetThreadDesktop / launched with lpDesktop</text>
+  <line x1="952" y1="428" x2="952" y2="442" stroke="#e65100" stroke-width="2" marker-end="url(#aOrange)"/>
+
+  <rect x="692" y="446" width="520" height="50" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="704" y="466" font-size="12.5" font-weight="700" fill="#0f172a">SendInput / keybd_event / mouse_event</text>
+  <text x="704" y="483" font-size="10.5" fill="#334155">real synthesized hardware input → updates the async key-state table</text>
+
+  <!-- ============ SECTION 3 : consumers ============ -->
+  <text x="44" y="524" font-size="13.5" font-weight="700" fill="#0f172a">③ Which consumers actually observe the input</text>
+  <text x="668" y="524" font-size="13.5" font-weight="700" fill="#0f172a">③ Which consumers actually observe the input</text>
+
+  <!-- A chips : YES NO NO NO -->
+  <g font-size="11" font-weight="700" fill="#0f172a">
+    <rect x="44"  y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="109" y="556" text-anchor="middle">GUI msg-queue</text>
+    <text x="109" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">GetMessage/Peek</text>
+    <rect x="66" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="109" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="190" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="255" y="556" text-anchor="middle">GetAsyncKeyState</text>
+    <text x="255" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">polling</text>
+    <rect x="216" y="577" width="78" height="15" rx="7.5" fill="#ffebee" stroke="#c62828" stroke-width="1"/>
+    <text x="255" y="588" text-anchor="middle" font-size="9.5" fill="#c62828">BLIND ✗</text>
+
+    <rect x="336" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="401" y="556" text-anchor="middle">Raw Input</text>
+    <text x="401" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">WM_INPUT</text>
+    <rect x="362" y="577" width="78" height="15" rx="7.5" fill="#ffebee" stroke="#c62828" stroke-width="1"/>
+    <text x="401" y="588" text-anchor="middle" font-size="9.5" fill="#c62828">BLIND ✗</text>
+
+    <rect x="482" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="547" y="556" text-anchor="middle">DirectInput</text>
+    <text x="547" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">games / anti-cheat</text>
+    <rect x="508" y="577" width="78" height="15" rx="7.5" fill="#ffebee" stroke="#c62828" stroke-width="1"/>
+    <text x="547" y="588" text-anchor="middle" font-size="9.5" fill="#c62828">BLIND ✗</text>
+  </g>
+  <text x="44" y="616" font-size="11" fill="#c62828">＋ UIPI silently drops posts from lower- to higher-integrity windows.</text>
+
+  <!-- B chips : all YES -->
+  <g font-size="11" font-weight="700" fill="#0f172a">
+    <rect x="668"  y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="733" y="556" text-anchor="middle">GUI msg-queue</text>
+    <text x="733" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">GetMessage/Peek</text>
+    <rect x="690" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="733" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="814" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="879" y="556" text-anchor="middle">GetAsyncKeyState</text>
+    <text x="879" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">polling</text>
+    <rect x="836" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="879" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="960" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="1025" y="556" text-anchor="middle">Raw Input</text>
+    <text x="1025" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">WM_INPUT</text>
+    <rect x="982" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="1025" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="1106" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="1171" y="556" text-anchor="middle">DirectInput</text>
+    <text x="1171" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">games / anti-cheat</text>
+    <rect x="1128" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="1171" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+  </g>
+  <text x="668" y="616" font-size="11" fill="#2e7d32">＋ Hardware input stream updates async state — every consumer sees it.</text>
+
+  <!-- ============ SECTION 4 : trade-offs ============ -->
+  <text x="44" y="646" font-size="13.5" font-weight="700" fill="#0f172a">④ Trade-offs</text>
+  <text x="668" y="646" font-size="13.5" font-weight="700" fill="#0f172a">④ Trade-offs</text>
+
+  <!-- A trade-offs -->
+  <g font-size="11" fill="#0f172a">
+    <rect x="44" y="656" width="568" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+    <rect x="44" y="656" width="6" height="28" fill="#2e7d32"/>
+    <text x="62" y="674">✓  Concurrent — real user desktop untouched; no screen theft</text>
+
+    <rect x="44" y="690" width="568" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+    <rect x="44" y="690" width="6" height="28" fill="#2e7d32"/>
+    <text x="62" y="708">✓  No SwitchDesktop, so no secure-desktop orphan risk</text>
+
+    <rect x="44" y="724" width="568" height="28" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="44" y="724" width="6" height="28" fill="#c62828"/>
+    <text x="62" y="742">✗  Synthetic only — blind to Raw Input / DirectInput / GetAsyncKeyState</text>
+
+    <rect x="44" y="758" width="568" height="28" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="44" y="758" width="6" height="28" fill="#c62828"/>
+    <text x="62" y="776">✗  UIPI-limited; hover / drag / SetCapture semantics unreliable</text>
+  </g>
+
+  <!-- B trade-offs -->
+  <g font-size="11" fill="#0f172a">
+    <rect x="668" y="656" width="568" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+    <rect x="668" y="656" width="6" height="28" fill="#2e7d32"/>
+    <text x="686" y="674">✓  Real hardware input — works against every consumer, incl. games / anti-cheat</text>
+
+    <rect x="668" y="690" width="568" height="28" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="668" y="690" width="6" height="28" fill="#c62828"/>
+    <text x="686" y="708">✗  Steals the physical display; the user is locked out while active</text>
+
+    <rect x="668" y="724" width="568" height="62" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="668" y="724" width="6" height="62" fill="#c62828"/>
+    <text x="686" y="748">✗  Secure desktop (UAC / lock / Ctrl-Alt-Del) can seize input &amp; deny</text>
+    <text x="700" y="766">SwitchDesktop back → orphan risk; needs a watchdog holding its own</text>
+    <text x="700" y="782">switch-back handle to restore the user's Default desktop.</text>
+  </g>
+
+  <!-- ============ SHARED FOUNDATION ============ -->
+  <rect x="24" y="820" width="1232" height="40" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="640" y="837" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">Shared foundation — both modes run in one session, hence one Local\ kernel-object namespace for IPC.</text>
+  <text x="640" y="852" text-anchor="middle" font-size="10.5" fill="#475569">The desktop boundary isolates only USER objects (HWNDs, window messages, hooks) — never files, registry, kernel objects, or the process token.</text>
+</svg>

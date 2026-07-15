@@ -1,0 +1,1219 @@
+<title>Virtual Desktops &amp; Input Forwarding — Win32 Schematic</title>
+<style>
+  :root {
+    --bg: #f4f6fb; --surface: #ffffff; --surface-2: #f8fafc;
+    --ink: #0f172a; --muted: #475569; --faint: #64748b; --border: #e2e8f0;
+    --accent: #4338ca; --accent-soft: #eef0fe; --accent-ink: #3730a3;
+    --good: #2e7d32; --good-soft: #e8f5e9; --warn: #b45309; --warn-soft: #fff3e0;
+    --danger: #c62828; --danger-soft: #fdecec;
+    --code-bg: #f1f3f9; --code-ink: #3730a3;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", "Segoe UI Mono", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --measure: 68ch;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0e14; --surface: #12161f; --surface-2: #161b26;
+      --ink: #e6edf3; --muted: #9aa7b4; --faint: #7d8b99; --border: #263040;
+      --accent: #a5b4fc; --accent-soft: #1c2033; --accent-ink: #c7d2fe;
+      --good: #6ee7a8; --good-soft: #10261a; --warn: #fbbf77; --warn-soft: #2a2113;
+      --danger: #f6a5a5; --danger-soft: #2a1618;
+      --code-bg: #1a2030; --code-ink: #c7d2fe;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb; --surface: #ffffff; --surface-2: #f8fafc;
+    --ink: #0f172a; --muted: #475569; --faint: #64748b; --border: #e2e8f0;
+    --accent: #4338ca; --accent-soft: #eef0fe; --accent-ink: #3730a3;
+    --good: #2e7d32; --good-soft: #e8f5e9; --warn: #b45309; --warn-soft: #fff3e0;
+    --danger: #c62828; --danger-soft: #fdecec; --code-bg: #f1f3f9; --code-ink: #3730a3;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0e14; --surface: #12161f; --surface-2: #161b26;
+    --ink: #e6edf3; --muted: #9aa7b4; --faint: #7d8b99; --border: #263040;
+    --accent: #a5b4fc; --accent-soft: #1c2033; --accent-ink: #c7d2fe;
+    --good: #6ee7a8; --good-soft: #10261a; --warn: #fbbf77; --warn-soft: #2a2113;
+    --danger: #f6a5a5; --danger-soft: #2a1618; --code-bg: #1a2030; --code-ink: #c7d2fe;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- top bar ---- */
+  header.bar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+  }
+  .bar-inner { display: flex; align-items: center; gap: 16px; height: 56px; }
+  .brand { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--ink); white-space: nowrap; }
+  .brand .dot { color: var(--accent); }
+  .bar nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+  .bar nav a {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    text-decoration: none; padding: 6px 9px; border-radius: 7px;
+  }
+  .bar nav a:hover { color: var(--accent); background: var(--accent-soft); }
+  .toggle {
+    font-family: var(--mono); font-size: 12px; cursor: pointer;
+    background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 7px; padding: 6px 10px;
+  }
+  .toggle:hover { color: var(--accent); border-color: var(--accent); }
+  .toggle:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- hero ---- */
+  .hero { padding: 64px 0 40px; border-bottom: 1px solid var(--border); }
+  .kicker {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 46px); line-height: 1.08; letter-spacing: -.02em;
+    margin: 14px 0 0; text-wrap: balance; font-weight: 800;
+  }
+  .lede { font-size: clamp(17px, 2.4vw, 20px); color: var(--muted); max-width: 62ch; margin: 20px 0 0; text-wrap: pretty; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .chip {
+    display: inline-flex; align-items: baseline; gap: 8px; font-size: 13px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 7px 14px; box-shadow: var(--shadow);
+  }
+  .chip b { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .verified {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 26px;
+    font-size: 13px; color: var(--good); font-family: var(--mono);
+    background: var(--good-soft); border: 1px solid color-mix(in srgb, var(--good) 30%, transparent);
+    padding: 6px 12px; border-radius: 8px;
+  }
+
+  /* ---- sections ---- */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 68px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .sec-num { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 600; }
+  h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -.015em; margin: 0; text-wrap: balance; font-weight: 750; }
+  .prose { max-width: var(--measure); }
+  .prose p { margin: 16px 0; color: var(--ink); }
+  .prose p.sub { color: var(--muted); }
+  strong { font-weight: 680; }
+  code {
+    font-family: var(--mono); font-size: .88em; background: var(--code-bg);
+    color: var(--code-ink); padding: .12em .4em; border-radius: 5px;
+    white-space: nowrap;
+  }
+
+  /* ---- figure ---- */
+  figure { margin: 30px 0 6px; }
+  .figframe {
+    background: #fbfdff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px; overflow-x: auto; box-shadow: var(--shadow);
+  }
+  .figframe svg { display: block; width: 100%; height: auto; min-width: 640px; }
+  figcaption { font-size: 13.5px; color: var(--faint); margin-top: 12px; max-width: var(--measure); }
+  figcaption b { color: var(--muted); font-weight: 650; }
+
+  /* ---- callouts ---- */
+  .note {
+    max-width: var(--measure); margin: 20px 0; padding: 14px 16px 14px 18px;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2);
+    border-left: 4px solid var(--accent); font-size: 15px;
+  }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note.danger { border-left-color: var(--danger); background: var(--danger-soft); }
+  .note .lbl { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+  .note.warn .lbl { color: var(--warn); }
+  .note.danger .lbl { color: var(--danger); }
+  .note.accent .lbl { color: var(--accent); }
+
+  /* ---- two-mode compare ---- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: var(--measure); margin: 22px 0; }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .mode { border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; background: var(--surface); }
+  .mode h3 { margin: 0 0 4px; font-size: 16px; }
+  .mode .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+  .mode.a { border-top: 3px solid var(--accent); } .mode.a .tag { color: var(--accent); }
+  .mode.b { border-top: 3px solid var(--warn); } .mode.b .tag { color: var(--warn); }
+  .mode ul { margin: 10px 0 0; padding-left: 18px; font-size: 14px; color: var(--muted); }
+  .mode li { margin: 5px 0; }
+
+  /* ---- corrections grid ---- */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 24px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .card .topic { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; letter-spacing: .01em; margin-bottom: 6px; }
+  .card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.55; }
+  .card .myth { color: var(--danger); font-weight: 600; }
+  .card .fix { color: var(--good); font-weight: 600; }
+
+  footer { padding: 44px 0 72px; color: var(--faint); font-size: 14px; }
+  footer .wrap { max-width: var(--measure); }
+  footer code { white-space: normal; }
+  a.inline { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+  a.inline:hover { border-bottom-color: var(--accent); }
+</style>
+
+<header class="bar">
+  <div class="wrap bar-inner">
+    <span class="brand">virtual&#8209;desktop<span class="dot">/</span>input&#8209;forwarding</span>
+    <nav>
+      <a href="#taxonomy">taxonomy</a>
+      <a href="#crux">crux</a>
+      <a href="#topology">topology</a>
+      <a href="#modes">modes</a>
+      <a href="#sequence">sequence</a>
+      <a href="#lifecycle">lifecycle</a>
+      <a href="#verified">verified</a>
+    </nav>
+    <button class="toggle" id="themeToggle" aria-label="Toggle color theme">◐ theme</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <div class="kicker">Win32 · Windows 11 · C++ · design schematic</div>
+    <h1>Creating a hidden desktop, and forwarding input into it</h1>
+    <p class="lede">A forwarder process captures input on the user's real desktop; a companion agent living on a hidden Win32 desktop object replays it against the windows hosted there. Six diagrams trace how — and where the OS says no.</p>
+    <div class="chips">
+      <span class="chip"><b>mechanism</b> Win32 desktop object · HDESK</span>
+      <span class="chip"><b>transport</b> shared-memory ring + named pipe</span>
+      <span class="chip"><b>inject</b> Mode A messages · Mode B SwitchDesktop</span>
+    </div>
+    <div class="verified">✓ every API-level claim cross-checked against Microsoft docs &amp; adversarially reviewed</div>
+  </div>
+
+  <section id="taxonomy">
+    <div class="sec-head"><span class="sec-num">§1</span><h2>Three things called "virtual desktop"</h2></div>
+    <div class="prose">
+      <p>On Windows 11 the phrase collapses three unrelated mechanisms at three layers. Picking the wrong one makes the goal — <em>forward input into an isolated desktop</em> — impossible.</p>
+      <p class="sub"><strong>Task View</strong> desktops (Win+Tab) are a shell veneer: every window still lives on the one <code>WinSta0\Default</code> desktop and shares its single input queue, so there is nothing separate to forward to. A <strong>separate WTS/RDP session</strong> gives real parallel input but needs a privileged Session-0 broker. A <strong>Win32 desktop object</strong> (<code>HDESK</code>) is the lowest-privilege thing that yields a genuine, separately addressable input queue — no service, driver, or hypervisor.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 900" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="taxonomy__arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-end">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="12" y="12" width="1216" height="876" rx="14" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="620" y="44" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">Three meanings of &#8220;virtual desktop&#8221; on Windows 11</text>
+  <text x="620" y="68" text-anchor="middle" font-size="14" fill="#475569">Why only the Win32 desktop object (HDESK) enables isolated per-agent input forwarding</text>
+  <rect x="452" y="84" width="336" height="46" rx="8" fill="#0f172a"/>
+  <text x="620" y="112" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">&#8220;Virtual desktop&#8221; = 3 unrelated concepts</text>
+  <path d="M620,130 C620,150 225,150 225,173" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#taxonomy__arrow)"/>
+  <path d="M620,130 L620,173" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#taxonomy__arrow)"/>
+  <path d="M620,130 C620,150 1015,150 1015,173" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#taxonomy__arrow)"/>
+  <g font-size="11.5" text-anchor="middle">
+    <rect x="184" y="143" width="82" height="18" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="225" y="156" fill="#334155">shell veneer</text>
+    <rect x="572" y="143" width="96" height="18" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="620" y="156" fill="#334155">kernel object</text>
+    <rect x="975" y="143" width="80" height="18" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="1015" y="156" fill="#334155">OS session</text>
+  </g>
+  <rect x="40" y="173" width="370" height="507" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <path d="M40,181 a8,8 0 0 1 8,-8 h354 a8,8 0 0 1 8,8 v64 h-370 z" fill="#64748b"/>
+  <circle cx="72" cy="211" r="16" fill="#ffffff"/><text x="72" y="216" text-anchor="middle" font-size="16" font-weight="700" fill="#64748b">1</text>
+  <text x="98" y="205" font-size="15" font-weight="700" fill="#ffffff">Task View virtual desktops</text>
+  <text x="98" y="227" font-size="11.5" fill="#e2e8f0">Shell window-grouping veneer (twinui / DWM)</text>
+  <g font-size="12.5" fill="#0f172a">
+    <text x="60" y="283" font-size="14" fill="#c62828">&#10007;</text><text x="82" y="283">Shares the single WinSta0\Default</text>
+    <text x="60" y="312" font-size="14" fill="#c62828">&#10007;</text><text x="82" y="312">One shared input queue</text>
+    <text x="60" y="341" font-size="14" fill="#c62828">&#10007;</text><text x="82" y="341">One shared HWND namespace</text>
+    <text x="60" y="370" font-size="14" fill="#64748b">&#8211;</text><text x="82" y="370">Switch = DWM show/hide, no new HDESK</text>
+    <text x="60" y="399" font-size="14" fill="#64748b">&#8211;</text><text x="82" y="399">IVirtualDesktopManager: query/move only</text>
+  </g>
+  <rect x="58" y="420" width="334" height="240" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="74" y="444" font-size="10.5" font-weight="700" letter-spacing="1" fill="#c62828">INPUT FORWARDING</text>
+  <text x="74" y="470" font-size="15" font-weight="700" fill="#c62828">Nothing to forward to</text>
+  <g font-size="12.5" fill="#0f172a">
+    <text x="74" y="498">Every window lives on one input</text>
+    <text x="74" y="518">desktop with one queue &#8212; the</text>
+    <text x="74" y="538">Task View &#8220;desktop&#8221; is not a</text>
+    <text x="74" y="558">separate object at all.</text>
+    <text x="74" y="588" font-weight="700" fill="#c62828">Zero input isolation possible.</text>
+  </g>
+  <rect x="435" y="173" width="370" height="507" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2.75"/>
+  <path d="M435,181 a8,8 0 0 1 8,-8 h354 a8,8 0 0 1 8,8 v64 h-370 z" fill="#4527a0"/>
+  <circle cx="467" cy="211" r="16" fill="#ffffff"/><text x="467" y="216" text-anchor="middle" font-size="16" font-weight="700" fill="#4527a0">2</text>
+  <text x="493" y="205" font-size="15" font-weight="700" fill="#ffffff">Win32 desktop object (HDESK)</text>
+  <text x="493" y="227" font-size="11.5" fill="#e9e2f7">CreateDesktopEx &#8212; securable object / WinSta0</text>
+  <rect x="705" y="150" width="90" height="20" rx="10" fill="#2e7d32"/><text x="750" y="164" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">CORRECT</text>
+  <g font-size="12.5" fill="#0f172a">
+    <text x="455" y="283" font-size="14" fill="#2e7d32">&#10003;</text><text x="477" y="283">Own HWND namespace + hook chains</text>
+    <text x="455" y="312" font-size="14" fill="#2e7d32">&#10003;</text><text x="477" y="312">Per-desktop message / input routing</text>
+    <text x="455" y="341" font-size="14" fill="#2e7d32">&#10003;</text><text x="477" y="341">Lockable DACL (CreateDesktopEx lpsa)</text>
+    <text x="455" y="370" font-size="14" fill="#2e7d32">&#10003;</text><text x="477" y="370">Hidden background desktop = real GUI</text>
+    <text x="455" y="399" font-size="14" fill="#2e7d32">&#10003;</text><text x="477" y="399">SetThreadDesktop binds the forwarder</text>
+  </g>
+  <rect x="453" y="420" width="334" height="240" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="469" y="444" font-size="10.5" font-weight="700" letter-spacing="1" fill="#2e7d32">INPUT FORWARDING</text>
+  <text x="469" y="470" font-size="15" font-weight="700" fill="#2e7d32">Isolated forwarding &#10003;</text>
+  <g font-size="12.5" fill="#0f172a">
+    <text x="469" y="498">SendInput reaches only the current</text>
+    <text x="469" y="518">input desktop &#8212; so drive background</text>
+    <text x="469" y="538">HWNDs with PostMessage /</text>
+    <text x="469" y="558">SendMessageTimeout instead.</text>
+    <text x="469" y="588" font-weight="700" fill="#2e7d32">No service &#183; driver &#183; hypervisor.</text>
+  </g>
+  <rect x="830" y="173" width="370" height="507" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <path d="M830,181 a8,8 0 0 1 8,-8 h354 a8,8 0 0 1 8,8 v64 h-370 z" fill="#1565c0"/>
+  <circle cx="862" cy="211" r="16" fill="#ffffff"/><text x="862" y="216" text-anchor="middle" font-size="16" font-weight="700" fill="#1565c0">3</text>
+  <text x="888" y="205" font-size="15" font-weight="700" fill="#ffffff">Separate WTS / RDP session</text>
+  <text x="888" y="227" font-size="11.5" fill="#dbeafe">Fully parallel interactive session</text>
+  <g font-size="12.5" fill="#0f172a">
+    <text x="850" y="283" font-size="14" fill="#2e7d32">&#10003;</text><text x="872" y="283">Own window station + desktops</text>
+    <text x="850" y="312" font-size="14" fill="#2e7d32">&#10003;</text><text x="872" y="312">Genuinely parallel real input</text>
+    <text x="850" y="341" font-size="14" fill="#e65100">&#9888;</text><text x="872" y="341">Crosses the Session 0 boundary</text>
+    <text x="850" y="370" font-size="14" fill="#e65100">&#9888;</text><text x="872" y="370">Needs a Session-0 broker service</text>
+    <text x="850" y="399" font-size="14" fill="#e65100">&#9888;</text><text x="872" y="399">WTSQueryUserToken &#8594; CreateProcessAsUser</text>
+  </g>
+  <rect x="848" y="420" width="334" height="240" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="864" y="444" font-size="10.5" font-weight="700" letter-spacing="1" fill="#e65100">INPUT FORWARDING</text>
+  <text x="864" y="470" font-size="15" font-weight="700" fill="#e65100">Works, but heavyweight</text>
+  <g font-size="12.5" fill="#0f172a">
+    <text x="864" y="498">Real parallel input &#8212; but requires</text>
+    <text x="864" y="518">a privileged Session-0 broker to</text>
+    <text x="864" y="538">create/launch into the session;</text>
+    <text x="864" y="558">client SKUs allow ~one console.</text>
+    <text x="864" y="588" font-weight="700" fill="#e65100">Service / higher privilege.</text>
+  </g>
+  <rect x="40" y="702" width="1160" height="98" rx="10" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+  <rect x="58" y="720" width="118" height="62" rx="8" fill="#4527a0"/>
+  <text x="117" y="748" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">WHY</text>
+  <text x="117" y="768" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">HDESK</text>
+  <g font-size="13.5" fill="#0f172a">
+    <text x="196" y="732">The <tspan font-weight="700">lowest-privilege</tspan> mechanism that yields a real, separately addressable input target &#8212; HWNDs on a private, DACL-locked</text>
+    <text x="196" y="754">desktop &#8212; <tspan font-weight="700">without a service, driver, or hypervisor.</tspan> Task View shares one input desktop (nothing to isolate);</text>
+    <text x="196" y="776">WTS sessions do isolate, but only by crossing Session 0 through a privileged broker service.</text>
+  </g>
+  <text x="40" y="838" font-size="12.5" font-weight="700" fill="#475569">Isolation still rests on 3 orthogonal walls:</text>
+  <g font-size="12" text-anchor="middle" fill="#0f172a">
+    <rect x="298" y="826" width="168" height="22" rx="11" fill="#eef2f6" stroke="#64748b"/><text x="382" y="841">Session 0 isolation</text>
+    <rect x="478" y="826" width="196" height="22" rx="11" fill="#eef2f6" stroke="#64748b"/><text x="576" y="841">Integrity levels + UIPI</text>
+    <rect x="686" y="826" width="178" height="22" rx="11" fill="#eef2f6" stroke="#64748b"/><text x="775" y="841">Per-desktop DACLs</text>
+  </g>
+</svg></div>
+      <figcaption><b>Figure 1.</b> The fork, and why HDESK is the only branch that supports isolated per-agent input forwarding.</figcaption>
+    </figure>
+    <div class="note accent"><span class="lbl">Not a sandbox</span> &nbsp;An <code>HDESK</code> isolates USER objects — window handles, messages, hooks — and nothing else. Token, files, registry, kernel objects, and the clipboard stay shared. It is a UI-containment primitive, not security isolation.</div>
+  </section>
+
+  <section id="crux">
+    <div class="sec-head"><span class="sec-num">§2</span><h2>The crux: one input desktop per session</h2></div>
+    <div class="prose">
+      <p>Everything bends around one invariant. On the interactive <code>WinSta0</code>, at most one desktop is the <strong>input desktop</strong> at any instant — the one that is visible and receives hardware input. <code>SwitchDesktop</code> chooses it.</p>
+      <p>Synthesized input from <code>SendInput</code> / <code>keybd_event</code> / <code>mouse_event</code> lands on the input desktop too. So a hidden desktop receives <em>neither</em> hardware nor useful synthesized input while it stays hidden. That forks the whole design into two injection modes.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 720" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="input_desktop__ahGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2e7d32"/></marker>
+    <marker id="input_desktop__ahRed" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#c62828"/></marker>
+  </defs>
+
+  <!-- background for dark-mode legibility -->
+  <rect x="4" y="4" width="1032" height="712" rx="16" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- title -->
+  <text x="36" y="46" font-size="20" font-weight="700" fill="#0f172a">The single input-desktop constraint</text>
+  <text x="36" y="72" font-size="13.5" fill="#475569">Hardware input and SendInput reach only the visible desktop — a hidden desktop must be driven through window messages.</text>
+
+  <!-- ================= LEFT: input-desktop-gated injectors ================= -->
+  <!-- hardware input -->
+  <rect x="36" y="150" width="250" height="80" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="52" y="180" font-size="14" font-weight="700" fill="#0f172a">Hardware input</text>
+  <text x="52" y="200" font-size="12" fill="#475569">Physical keyboard / mouse</text>
+  <text x="52" y="218" font-size="11" fill="#64748b">delivered by the OS input path</text>
+
+  <!-- SendInput -->
+  <rect x="36" y="250" width="250" height="96" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="52" y="278" font-size="14" font-weight="700" fill="#e65100">SendInput</text>
+  <text x="52" y="298" font-size="12" fill="#7c2d12">keybd_event · mouse_event</text>
+  <text x="52" y="316" font-size="11" fill="#9a3412">synthesized input into the caller</text>
+  <text x="52" y="332" font-size="11" fill="#9a3412">thread's current-desktop input stream</text>
+
+  <!-- reaches pills -->
+  <rect x="289" y="176" width="49" height="18" rx="4" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+  <text x="313" y="189" font-size="9.5" fill="#2e7d32" text-anchor="middle">✓ reaches</text>
+  <rect x="289" y="296" width="49" height="18" rx="4" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+  <text x="313" y="309" font-size="9.5" fill="#2e7d32" text-anchor="middle">✓ reaches</text>
+
+  <!-- arrows into Default (the input desktop) -->
+  <path d="M286,190 C324,190 330,306 356,306" fill="none" stroke="#2e7d32" stroke-width="2" marker-end="url(#input_desktop__ahGreen)"/>
+  <path d="M286,298 C326,298 332,356 356,356" fill="none" stroke="#2e7d32" stroke-width="2" marker-end="url(#input_desktop__ahGreen)"/>
+
+  <!-- why-not-switch note -->
+  <rect x="36" y="366" width="250" height="182" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="52" y="392" font-size="13" font-weight="700" fill="#334155">Why not just switch to it?</text>
+  <text x="52" y="416" font-size="12" fill="#475569">SendInput needs the caller's thread</text>
+  <text x="52" y="434" font-size="12" fill="#475569">on the current input desktop.</text>
+  <text x="52" y="458" font-size="12" fill="#475569">You could SwitchDesktop to Sandbox —</text>
+  <text x="52" y="476" font-size="12" fill="#475569">but that makes it visible, defeating</text>
+  <text x="52" y="494" font-size="12" fill="#475569">the whole hidden-desktop design.</text>
+  <text x="52" y="524" font-size="12.5" font-weight="700" fill="#e65100">→ So drive it with messages instead.</text>
+
+  <!-- ================= CENTER-RIGHT: WinSta0 ================= -->
+  <rect x="340" y="118" width="664" height="430" rx="12" fill="#ffffff" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="356" y="140" font-size="13" font-weight="700" fill="#334155">WinSta0 — interactive window station (one per session)</text>
+
+  <!-- invariant banner -->
+  <rect x="356" y="150" width="632" height="40" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="672" y="175" font-size="12" fill="#0f172a" text-anchor="middle">Invariant: at most ONE input desktop at a time (chosen by SwitchDesktop) — only it is visible and receives hardware + synthesized input.</text>
+
+  <!-- Default desktop (input desktop) -->
+  <rect x="356" y="206" width="280" height="316" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <text x="372" y="240" font-size="14" font-weight="700" fill="#0d47a1">Desktop: Default</text>
+  <rect x="372" y="252" width="150" height="24" rx="12" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="447" y="269" font-size="11" font-weight="700" fill="#2e7d32" text-anchor="middle">● INPUT DESKTOP</text>
+  <text x="372" y="300" font-size="12" fill="#1565c0">The current input desktop</text>
+  <text x="372" y="318" font-size="11" fill="#1976d2">visible on the physical display</text>
+  <rect x="372" y="336" width="248" height="150" rx="6" fill="#ffffff" stroke="#90caf9" stroke-width="1.5"/>
+  <text x="386" y="360" font-size="11" font-weight="700" fill="#1565c0">Receives:</text>
+  <text x="386" y="388" font-size="12" fill="#2e7d32">✓ Hardware keyboard / mouse</text>
+  <text x="386" y="416" font-size="12" fill="#2e7d32">✓ SendInput / keybd_event</text>
+  <text x="386" y="444" font-size="12" fill="#2e7d32">✓ Window messages</text>
+  <text x="386" y="472" font-size="11" fill="#64748b">everything routes here</text>
+
+  <!-- Sandbox desktop (hidden) -->
+  <rect x="708" y="206" width="280" height="316" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+  <text x="724" y="240" font-size="14" font-weight="700" fill="#311b92">Desktop: Sandbox</text>
+  <rect x="724" y="252" width="176" height="24" rx="12" fill="#eceff1" stroke="#607d8b" stroke-width="1.5"/>
+  <text x="812" y="269" font-size="11" font-weight="700" fill="#455a64" text-anchor="middle">○ HIDDEN — not switched to</text>
+  <text x="724" y="300" font-size="12" fill="#4527a0">Not the input desktop</text>
+  <text x="724" y="318" font-size="11" fill="#5e35b1">never made visible (no SwitchDesktop)</text>
+  <rect x="724" y="336" width="248" height="150" rx="6" fill="#ffffff" stroke="#b39ddb" stroke-width="1.5"/>
+  <text x="738" y="360" font-size="11" font-weight="700" fill="#4527a0">Receives:</text>
+  <text x="738" y="388" font-size="12" fill="#c62828">✗ Hardware keyboard / mouse</text>
+  <text x="738" y="416" font-size="12" fill="#c62828">✗ SendInput (needs input desktop)</text>
+  <text x="738" y="444" font-size="12" fill="#2e7d32">✓ Window messages (per-desktop)</text>
+  <text x="738" y="472" font-size="11" fill="#64748b">the only way in while hidden</text>
+
+  <!-- barrier between desktops -->
+  <rect x="660" y="290" width="24" height="172" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="672" y="312" font-size="18" font-weight="700" fill="#c62828" text-anchor="middle">✗</text>
+  <text x="672" y="384" font-size="11" font-weight="600" fill="#c62828" text-anchor="middle" transform="rotate(-90 672 384)">hardware / SendInput blocked</text>
+  <path d="M636,382 L656,382" fill="none" stroke="#c62828" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#input_desktop__ahRed)"/>
+
+  <!-- ================= BOTTOM: message layer ================= -->
+  <rect x="520" y="586" width="484" height="102" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="536" y="610" font-size="13" font-weight="700" fill="#e65100">Message layer — the way into a hidden desktop</text>
+  <text x="536" y="632" font-size="12" fill="#7c2d12">PostMessage / SendMessageTimeout → target HWNDs (via EnumDesktopWindows).</text>
+  <text x="536" y="652" font-size="12" fill="#7c2d12">Window messages are per-desktop — not gated by the input desktop, so a worker</text>
+  <text x="536" y="672" font-size="12" fill="#7c2d12">thread attached to Sandbox (SetThreadDesktop) drives its windows while hidden.</text>
+
+  <!-- message arrow rising into Sandbox -->
+  <path d="M660,586 C700,552 780,536 812,524" fill="none" stroke="#2e7d32" stroke-width="2" marker-end="url(#input_desktop__ahGreen)"/>
+  <rect x="676" y="540" width="196" height="18" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="774" y="553" font-size="11" fill="#2e7d32" text-anchor="middle">posts to HWNDs on the hidden desktop</text>
+
+  <!-- ================= legend ================= -->
+  <rect x="36" y="584" width="460" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="52" y="608" font-size="12" font-weight="700" fill="#334155">Legend</text>
+  <line x1="52" y1="626" x2="86" y2="626" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#input_desktop__ahGreen)"/>
+  <text x="98" y="630" font-size="12" fill="#475569">input received / message delivered (works)</text>
+  <line x1="52" y1="650" x2="86" y2="650" stroke="#c62828" stroke-width="2.5" stroke-dasharray="4 3" marker-end="url(#input_desktop__ahRed)"/>
+  <text x="98" y="654" font-size="12" fill="#475569">input blocked — desktop is not the input desktop</text>
+  <text x="52" y="678" font-size="11" font-style="italic" fill="#64748b">Task View "virtual desktops" are NOT this — they share the one input desktop.</text>
+</svg></div>
+      <figcaption><b>Figure 2.</b> Hardware input and <code>SendInput</code> reach only the visible desktop; a hidden desktop must be driven through window messages.</figcaption>
+    </figure>
+    <div class="note warn"><span class="lbl">Myth, corrected</span> &nbsp;Injecting from a thread bound to a non-input desktop does <strong>not</strong> fail with <code>ERROR_ACCESS_DENIED</code>. The call "succeeds"; the input simply lands on a queue nobody is watching. There is no access-denied signal to detect — you architect around it, you don't catch it.</div>
+  </section>
+
+  <section id="topology">
+    <div class="sec-head"><span class="sec-num">§3</span><h2>Topology: two processes, one transport</h2></div>
+    <div class="prose">
+      <p>Window messages and hooks are <strong>desktop-bound</strong> — "messages can be sent only between processes on the same desktop." So the forwarder→agent channel cannot ride USER objects; it must be kernel objects, which are <em>not</em> desktop-bound.</p>
+      <p class="sub">A pagefile-backed shared-memory ring plus an auto-reset event carries the high-rate keystroke stream (the LL-hook callback must never block); a message-mode named pipe carries framed control. Both resolve within one session across both desktops — the section/event via <code>Local\</code>, the pipe via <code>\Device\NamedPipe</code>.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 740" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="topology__mk-green" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#2e7d32"/></marker>
+    <marker id="topology__mk-slate" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker>
+    <marker id="topology__mk-red" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#c62828"/></marker>
+    <marker id="topology__mk-purple" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4527a0"/></marker>
+  </defs>
+
+  <!-- background -->
+  <rect x="8" y="8" width="1164" height="724" rx="18" fill="#fbfdff" stroke="#e2e8f0"/>
+
+  <!-- title -->
+  <text x="24" y="34" font-size="18" font-weight="700" fill="#0f172a">Process / Desktop Topology — forwarder, companion agent, one cross-desktop transport</text>
+  <text x="24" y="54" font-size="12.5" fill="#64748b">One session · WinSta0 · Default (visible input) + Sandbox (hidden) · USER objects are desktop-bound, kernel objects are not.</text>
+
+  <!-- ============ SESSION CONTAINER ============ -->
+  <rect x="24" y="66" width="1132" height="254" rx="10" fill="#fbfdff" stroke="#cbd5e1"/>
+  <text x="40" y="87" font-size="13" font-weight="700" fill="#0f172a">One interactive session · one window station WinSta0 · two desktops</text>
+
+  <!-- Default panel -->
+  <rect x="44" y="98" width="440" height="208" rx="8" fill="#e3f2fd" stroke="#1565c0"/>
+  <text x="56" y="118" font-size="12.5" font-weight="700" fill="#0f172a">WinSta0\Default — the visible input desktop</text>
+  <!-- Process A -->
+  <rect x="56" y="128" width="416" height="170" rx="8" fill="#fff3e0" stroke="#e65100"/>
+  <text x="68" y="150" font-size="13" font-weight="700" fill="#0f172a">Process A — Forwarder</text>
+  <text x="68" y="168" font-size="10.5" fill="#475569">Capture thread runs on WinSta0\Default</text>
+  <text x="68" y="190" font-size="10.5" fill="#334155">• Installs WH_KEYBOARD_LL / WH_MOUSE_LL</text>
+  <text x="68" y="208" font-size="10.5" fill="#334155">• Runs a mandatory message pump (keeps hooks alive)</text>
+  <text x="68" y="226" font-size="10.5" fill="#334155">• Suppresses an event by returning nonzero</text>
+  <text x="68" y="246" font-size="10.5" fill="#334155">• Capture-and-hand-off only — never blocks in the callback</text>
+
+  <!-- USER boundary wall -->
+  <rect x="494" y="98" width="22" height="208" rx="3" fill="#eef2f7" stroke="#64748b"/>
+  <text transform="rotate(-90 500 202)" x="500" y="202" text-anchor="middle" font-size="8.5" font-weight="700" fill="#334155">USER boundary</text>
+  <text transform="rotate(-90 511 202)" x="511" y="202" text-anchor="middle" font-size="7.8" fill="#475569">HWND · HHOOK · message-queue = desktop-bound</text>
+
+  <!-- Sandbox panel -->
+  <rect x="524" y="98" width="612" height="208" rx="8" fill="#ede7f6" stroke="#4527a0"/>
+  <text x="536" y="117" font-size="12.5" font-weight="700" fill="#0f172a">WinSta0\Sandbox — hidden desktop, never SwitchDesktop'd</text>
+  <text x="536" y="132" font-size="10" fill="#475569">receives no hardware or synthesized input</text>
+  <!-- Process B -->
+  <rect x="536" y="146" width="238" height="152" rx="8" fill="#fff3e0" stroke="#e65100"/>
+  <text x="548" y="167" font-size="12.5" font-weight="700" fill="#0f172a">Process B — Companion agent</text>
+  <text x="548" y="184" font-size="10.5" fill="#475569">Injector thread on WinSta0\Sandbox</text>
+  <text x="548" y="204" font-size="10.5" fill="#334155">• SetThreadDesktop(Sandbox) before it</text>
+  <text x="558" y="216" font-size="10.5" fill="#334155">owns any window or hook</text>
+  <text x="548" y="236" font-size="10.5" fill="#334155">• Consumes the ring; builds</text>
+  <text x="558" y="248" font-size="10.5" fill="#334155">WM_KEY* / WM_*BUTTON* messages</text>
+  <!-- Process C -->
+  <rect x="888" y="146" width="238" height="152" rx="8" fill="#ffffff" stroke="#64748b"/>
+  <text x="900" y="167" font-size="12.5" font-weight="700" fill="#0f172a">Process C — Hosted app</text>
+  <text x="900" y="185" font-size="10.5" fill="#475569">Launched with STARTUPINFO.lpDesktop</text>
+  <text x="900" y="197" font-size="10.5" fill="#475569">= "WinSta0\Sandbox"</text>
+  <text x="900" y="217" font-size="10.5" fill="#334155">• Top-level windows + a pump</text>
+  <text x="900" y="235" font-size="10.5" fill="#334155">• GetMessage / TranslateMessage</text>
+  <text x="900" y="253" font-size="10.5" fill="#334155">• Renders off-screen</text>
+  <!-- same-desktop message arrow B -> C -->
+  <line x1="775" y1="252" x2="885" y2="252" stroke="#4527a0" stroke-width="1.8" marker-end="url(#topology__mk-purple)"/>
+  <rect x="776" y="192" width="110" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="831" y="207" text-anchor="middle" font-size="9.5" font-weight="600" fill="#4527a0">PostMessage /</text>
+  <text x="831" y="220" text-anchor="middle" font-size="9.5" font-weight="600" fill="#4527a0">SendMessageTimeout</text>
+
+  <!-- blocked cross-desktop window message on the wall -->
+  <line x1="474" y1="246" x2="495" y2="246" stroke="#c62828" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#topology__mk-red)"/>
+  <circle cx="505" cy="246" r="8" fill="none" stroke="#c62828" stroke-width="1.8"/>
+  <line x1="499.6" y1="240.6" x2="510.4" y2="251.4" stroke="#c62828" stroke-width="1.8"/>
+
+  <!-- ============ KERNEL BAND ============ -->
+  <rect x="24" y="392" width="1132" height="218" rx="10" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="40" y="414" font-size="13" font-weight="700" fill="#0f172a">Session kernel objects — desktop-independent, shared across both desktops in one session</text>
+  <text x="40" y="432" font-size="10.5" fill="#33691e">Both resolve within one session and reach across both desktops — no Global\ prefix, no SeCreateGlobalPrivilege.</text>
+
+  <!-- ring box (below Default / forwarder) -->
+  <rect x="48" y="442" width="536" height="156" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+  <text x="64" y="464" font-size="12.5" font-weight="700" fill="#0f172a">Shared-memory ring — high-rate input stream</text>
+  <text x="64" y="484" font-size="10.5" fill="#334155">Local\ pagefile-backed section + auto-reset event</text>
+  <text x="64" y="503" font-size="10.5" fill="#334155">Lock-free: producer (the LL-hook callback) never blocks or syscalls</text>
+  <text x="64" y="522" font-size="10.5" fill="#334155">Per-slot seqlock re-checked for torn reads · release / acquire publish</text>
+  <text x="64" y="547" font-size="10" fill="#475569">Section &amp; event resolve in the per-session Local\ namespace</text>
+  <text x="64" y="561" font-size="10" fill="#475569">(\Sessions\N\BaseNamedObjects)</text>
+
+  <!-- pipe box (below Sandbox / agent) -->
+  <rect x="596" y="442" width="536" height="156" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+  <text x="612" y="464" font-size="12.5" font-weight="700" fill="#0f172a">Named pipe — low-rate control channel</text>
+  <text x="612" y="484" font-size="10.5" fill="#334155">\\.\pipe\name · PIPE_TYPE_MESSAGE — framed per-message</text>
+  <text x="612" y="503" font-size="10.5" fill="#334155">Handshake · version + record_size negotiate · flush · shutdown · ack</text>
+  <text x="612" y="522" font-size="10.5" fill="#334155">Every reading handle must set PIPE_READMODE_MESSAGE</text>
+  <text x="612" y="547" font-size="10" fill="#b71c1c">NOT a BaseNamedObjects object — lives in \Device\NamedPipe</text>
+  <text x="612" y="561" font-size="10" fill="#b71c1c">as \\.\pipe\name (still cross-desktop within the session)</text>
+
+  <!-- ============ CONNECTORS (drawn on top) ============ -->
+  <!-- produce: forwarder -> ring -->
+  <line x1="200" y1="298" x2="200" y2="442" stroke="#2e7d32" stroke-width="2" marker-end="url(#topology__mk-green)"/>
+  <!-- consume: ring -> agent -->
+  <line x1="555" y1="442" x2="618" y2="298" stroke="#2e7d32" stroke-width="2" marker-end="url(#topology__mk-green)"/>
+  <!-- control: agent <-> pipe -->
+  <line x1="720" y1="298" x2="720" y2="442" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 3" marker-start="url(#topology__mk-slate)" marker-end="url(#topology__mk-slate)"/>
+  <!-- control: forwarder <-> pipe -->
+  <path d="M340,298 L340,376 L650,376 L650,442" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 3" marker-start="url(#topology__mk-slate)" marker-end="url(#topology__mk-slate)"/>
+
+  <!-- pills in the open gap band -->
+  <rect x="140" y="347" width="132" height="18" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="206" y="360" text-anchor="middle" font-size="10" fill="#0f172a">produce · release store</text>
+
+  <rect x="535" y="340" width="128" height="18" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="599" y="353" text-anchor="middle" font-size="10" fill="#0f172a">consume · acquire load</text>
+
+  <rect x="372" y="367" width="58" height="18" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="401" y="380" text-anchor="middle" font-size="10" fill="#0f172a">control</text>
+
+  <rect x="691" y="349" width="58" height="18" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="720" y="362" text-anchor="middle" font-size="10" fill="#0f172a">control</text>
+
+  <rect x="356" y="316" width="200" height="18" rx="6" fill="#ffebee" stroke="#c62828"/>
+  <text x="456" y="329" text-anchor="middle" font-size="9.5" font-weight="600" fill="#c62828">✕  cross-desktop window message blocked</text>
+
+  <!-- SendInput red note -->
+  <rect x="838" y="326" width="294" height="60" rx="8" fill="#ffebee" stroke="#c62828"/>
+  <text x="852" y="344" font-size="9.6" fill="#b71c1c">SendInput can't reach a hidden desktop — it lands</text>
+  <text x="852" y="356" font-size="9.6" fill="#b71c1c">on whatever desktop is the current input desktop;</text>
+  <text x="852" y="368" font-size="9.6" fill="#b71c1c">the sandbox is driven purely through the message</text>
+  <text x="852" y="380" font-size="9.6" fill="#b71c1c">layer.</text>
+
+  <!-- ============ FOOTER CAVEATS ============ -->
+  <rect x="24" y="624" width="556" height="88" rx="8" fill="#f8fafc" stroke="#64748b"/>
+  <circle cx="48" cy="650" r="9" fill="#c62828"/>
+  <text x="48" y="654" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">!</text>
+  <text x="66" y="649" font-size="12.5" font-weight="700" fill="#0f172a">Not a security sandbox</text>
+  <text x="40" y="672" font-size="10.5" fill="#334155">The desktop isolates only USER objects. Same token, files, registry,</text>
+  <text x="40" y="688" font-size="10.5" fill="#334155">kernel objects &amp; process list all stay shared.</text>
+
+  <rect x="600" y="624" width="556" height="88" rx="8" fill="#f8fafc" stroke="#64748b"/>
+  <circle cx="624" cy="650" r="9" fill="#c62828"/>
+  <text x="624" y="654" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">!</text>
+  <text x="642" y="649" font-size="12.5" font-weight="700" fill="#0f172a">Restore discipline</text>
+  <text x="616" y="672" font-size="10.5" fill="#334155">Never leave Sandbox as the input desktop. The secure desktop</text>
+  <text x="616" y="688" font-size="10.5" fill="#334155">(UAC / lock / Ctrl+Alt+Del) transiently seizes the input role and</text>
+  <text x="616" y="704" font-size="10.5" fill="#334155">denies SwitchDesktop.</text>
+</svg></div>
+      <figcaption><b>Figure 3.</b> Forwarder (Process A) on the visible desktop, companion agent (Process B) on the hidden desktop, hosted app (Process C), and the cross-desktop kernel-object transport between them.</figcaption>
+    </figure>
+  </section>
+
+  <section id="modes">
+    <div class="sec-head"><span class="sec-num">§4</span><h2>Injection: Mode A vs Mode B</h2></div>
+    <div class="prose">
+      <p>Neither mode is a superset of the other — the choice is a real trade-off.</p>
+    </div>
+    <div class="compare">
+      <div class="mode a">
+        <div class="tag">Mode A · concurrent</div>
+        <h3>Synthetic messages</h3>
+        <ul>
+          <li>Agent stays on the hidden desktop; user keeps working</li>
+          <li><code>PostMessage</code> / <code>SendMessageTimeout</code> to leaf HWNDs</li>
+          <li><b>Blind</b> to Raw Input, DirectInput, <code>GetAsyncKeyState</code></li>
+          <li>UIPI silently drops lower→higher-integrity posts</li>
+        </ul>
+      </div>
+      <div class="mode b">
+        <div class="tag">Mode B · screen-stealing</div>
+        <h3>SwitchDesktop + SendInput</h3>
+        <ul>
+          <li>Real hardware-level input — games / anti-cheat see it</li>
+          <li>Makes the sandbox <em>visible</em>; user is locked out</li>
+          <li>Secure desktop can deny the switch, or "succeed" without switching</li>
+          <li>Orphan risk on crash → needs a watchdog with its own handle</li>
+        </ul>
+      </div>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 884" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="injection_modes__aInk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0f172a"/>
+    </marker>
+    <marker id="injection_modes__aPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4527a0"/>
+    </marker>
+    <marker id="injection_modes__aOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#e65100"/>
+    </marker>
+  </defs>
+
+  <rect x="8" y="8" width="1264" height="868" rx="16" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Title -->
+  <text x="640" y="42" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">Injection Mode A (messages)  vs  Mode B (SwitchDesktop + SendInput)</text>
+  <text x="640" y="64" text-anchor="middle" font-size="12.5" fill="#64748b">Driving a hidden sandbox desktop (WinSta0\Sandbox) two ways — concurrent synthetic messages vs screen-stealing real input</text>
+
+  <!-- ============ PANEL FRAMES ============ -->
+  <rect x="24" y="76" width="608" height="784" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="648" y="76" width="608" height="784" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ============ HEADERS ============ -->
+  <rect x="24" y="76" width="608" height="48" rx="12" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="44" y="106" font-size="15.5" font-weight="700" fill="#0f172a">MODE A — Message injection</text>
+  <rect x="520" y="90" width="98" height="20" rx="10" fill="#ffffff" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="569" y="104" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1565c0">CONCURRENT</text>
+
+  <rect x="648" y="76" width="608" height="48" rx="12" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="668" y="106" font-size="15.5" font-weight="700" fill="#0f172a">MODE B — SwitchDesktop + SendInput</text>
+  <rect x="1120" y="90" width="118" height="20" rx="10" fill="#ffffff" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="1179" y="104" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4527a0">SCREEN-STEALING</text>
+
+  <!-- ============ SECTION 1 : input desktop ============ -->
+  <text x="44" y="150" font-size="13.5" font-weight="700" fill="#0f172a">① Which desktop holds the input role</text>
+  <text x="668" y="150" font-size="13.5" font-weight="700" fill="#0f172a">① Which desktop holds the input role</text>
+
+  <!-- A cards -->
+  <rect x="44" y="160" width="274" height="94" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <rect x="54" y="170" width="118" height="18" rx="9" fill="#1565c0"/>
+  <text x="113" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">VISIBLE · INPUT</text>
+  <text x="60" y="216" font-size="13" font-weight="700" fill="#0f172a">Default desktop</text>
+  <text x="60" y="236" font-size="10.5" fill="#334155">user's real apps — still active</text>
+
+  <rect x="338" y="160" width="274" height="94" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <rect x="348" y="170" width="66" height="18" rx="9" fill="#64748b"/>
+  <text x="381" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">HIDDEN</text>
+  <text x="354" y="216" font-size="13" font-weight="700" fill="#0f172a">WinSta0\Sandbox</text>
+  <text x="354" y="236" font-size="10.5" fill="#334155">driven off-screen, in parallel</text>
+
+  <circle cx="328" cy="207" r="14" fill="#ffffff" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="328" y="212" text-anchor="middle" font-size="15" font-weight="700" fill="#1565c0">∥</text>
+  <text x="44" y="274" font-size="11" fill="#475569">The input desktop is unchanged — the user never sees the sandbox.</text>
+
+  <!-- B cards -->
+  <rect x="668" y="160" width="274" height="94" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <rect x="678" y="170" width="66" height="18" rx="9" fill="#64748b"/>
+  <text x="711" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">HIDDEN</text>
+  <text x="684" y="216" font-size="13" font-weight="700" fill="#0f172a">Default desktop</text>
+  <text x="684" y="236" font-size="10.5" fill="#c62828">user is locked out</text>
+
+  <rect x="962" y="160" width="274" height="94" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+  <rect x="972" y="170" width="118" height="18" rx="9" fill="#4527a0"/>
+  <text x="1031" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">VISIBLE · INPUT</text>
+  <text x="978" y="216" font-size="13" font-weight="700" fill="#0f172a">WinSta0\Sandbox</text>
+  <text x="978" y="236" font-size="10.5" fill="#334155">promoted to input desktop</text>
+
+  <circle cx="952" cy="207" r="14" fill="#ffffff" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="952" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="#4527a0">⇄</text>
+  <text x="668" y="274" font-size="11" fill="#475569">SwitchDesktop makes the sandbox the input desktop — one per session; the flip is visible.</text>
+
+  <!-- ============ SECTION 2 : mechanism ============ -->
+  <text x="44" y="304" font-size="13.5" font-weight="700" fill="#0f172a">② How keystrokes &amp; clicks reach the sandbox</text>
+  <rect x="386" y="291" width="226" height="20" rx="10" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+  <text x="499" y="305" text-anchor="middle" font-size="10.5" font-weight="600" fill="#c62828">SendInput can't reach a hidden desktop</text>
+
+  <text x="668" y="304" font-size="13.5" font-weight="700" fill="#0f172a">② How keystrokes &amp; clicks reach the sandbox</text>
+  <rect x="998" y="291" width="238" height="20" rx="10" fill="#ede7f6" stroke="#4527a0" stroke-width="1.2"/>
+  <text x="1117" y="305" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4527a0">real input needs it to BE the input desktop</text>
+
+  <!-- A pipeline -->
+  <rect x="68" y="318" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="80" y="338" font-size="12.5" font-weight="700" fill="#0f172a">Worker thread · SetThreadDesktop(hSandbox)</text>
+  <text x="80" y="355" font-size="10.5" fill="#334155">bind to the hidden desktop before it owns any window or hook</text>
+  <line x1="328" y1="364" x2="328" y2="378" stroke="#e65100" stroke-width="2" marker-end="url(#injection_modes__aOrange)"/>
+
+  <rect x="68" y="382" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="80" y="402" font-size="12.5" font-weight="700" fill="#0f172a">EnumDesktopWindows(hSandbox) → HWNDs</text>
+  <text x="80" y="419" font-size="10.5" fill="#334155">top-level only — descend via EnumChildWindows to the leaf control</text>
+  <line x1="328" y1="428" x2="328" y2="442" stroke="#e65100" stroke-width="2" marker-end="url(#injection_modes__aOrange)"/>
+
+  <rect x="68" y="446" width="520" height="50" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="80" y="466" font-size="12.5" font-weight="700" fill="#0f172a">PostMessage / SendMessageTimeout</text>
+  <text x="80" y="483" font-size="10.5" fill="#334155">WM_KEYDOWN·WM_CHAR·WM_KEYUP · WM_MOUSEMOVE·WM_*BUTTON* — built lParam, client coords</text>
+
+  <!-- B pipeline -->
+  <rect x="692" y="318" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="704" y="338" font-size="12.5" font-weight="700" fill="#0f172a">SwitchDesktop(hSandbox)</text>
+  <text x="704" y="355" font-size="10.5" fill="#334155">requires DESKTOP_SWITCHDESKTOP — sandbox becomes the one input desktop</text>
+  <line x1="952" y1="364" x2="952" y2="378" stroke="#e65100" stroke-width="2" marker-end="url(#injection_modes__aOrange)"/>
+
+  <rect x="692" y="382" width="520" height="46" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="704" y="402" font-size="12.5" font-weight="700" fill="#0f172a">Injector thread now sits on the input desktop</text>
+  <text x="704" y="419" font-size="10.5" fill="#334155">attached via SetThreadDesktop / launched with lpDesktop</text>
+  <line x1="952" y1="428" x2="952" y2="442" stroke="#e65100" stroke-width="2" marker-end="url(#injection_modes__aOrange)"/>
+
+  <rect x="692" y="446" width="520" height="50" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="704" y="466" font-size="12.5" font-weight="700" fill="#0f172a">SendInput / keybd_event / mouse_event</text>
+  <text x="704" y="483" font-size="10.5" fill="#334155">real synthesized hardware input → updates the async key-state table</text>
+
+  <!-- ============ SECTION 3 : consumers ============ -->
+  <text x="44" y="524" font-size="13.5" font-weight="700" fill="#0f172a">③ Which consumers actually observe the input</text>
+  <text x="668" y="524" font-size="13.5" font-weight="700" fill="#0f172a">③ Which consumers actually observe the input</text>
+
+  <!-- A chips : YES NO NO NO -->
+  <g font-size="11" font-weight="700" fill="#0f172a">
+    <rect x="44"  y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="109" y="556" text-anchor="middle">GUI msg-queue</text>
+    <text x="109" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">GetMessage/Peek</text>
+    <rect x="66" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="109" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="190" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="255" y="556" text-anchor="middle">GetAsyncKeyState</text>
+    <text x="255" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">polling</text>
+    <rect x="216" y="577" width="78" height="15" rx="7.5" fill="#ffebee" stroke="#c62828" stroke-width="1"/>
+    <text x="255" y="588" text-anchor="middle" font-size="9.5" fill="#c62828">BLIND ✗</text>
+
+    <rect x="336" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="401" y="556" text-anchor="middle">Raw Input</text>
+    <text x="401" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">WM_INPUT</text>
+    <rect x="362" y="577" width="78" height="15" rx="7.5" fill="#ffebee" stroke="#c62828" stroke-width="1"/>
+    <text x="401" y="588" text-anchor="middle" font-size="9.5" fill="#c62828">BLIND ✗</text>
+
+    <rect x="482" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="547" y="556" text-anchor="middle">DirectInput</text>
+    <text x="547" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">games / anti-cheat</text>
+    <rect x="508" y="577" width="78" height="15" rx="7.5" fill="#ffebee" stroke="#c62828" stroke-width="1"/>
+    <text x="547" y="588" text-anchor="middle" font-size="9.5" fill="#c62828">BLIND ✗</text>
+  </g>
+  <text x="44" y="616" font-size="11" fill="#c62828">＋ UIPI silently drops posts from lower- to higher-integrity windows.</text>
+
+  <!-- B chips : all YES -->
+  <g font-size="11" font-weight="700" fill="#0f172a">
+    <rect x="668"  y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="733" y="556" text-anchor="middle">GUI msg-queue</text>
+    <text x="733" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">GetMessage/Peek</text>
+    <rect x="690" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="733" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="814" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="879" y="556" text-anchor="middle">GetAsyncKeyState</text>
+    <text x="879" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">polling</text>
+    <rect x="836" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="879" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="960" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="1025" y="556" text-anchor="middle">Raw Input</text>
+    <text x="1025" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">WM_INPUT</text>
+    <rect x="982" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="1025" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+
+    <rect x="1106" y="536" width="130" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="1171" y="556" text-anchor="middle">DirectInput</text>
+    <text x="1171" y="570" text-anchor="middle" font-size="9.5" font-weight="400" fill="#475569">games / anti-cheat</text>
+    <rect x="1128" y="577" width="86" height="15" rx="7.5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="1171" y="588" text-anchor="middle" font-size="9.5" fill="#2e7d32">SEES IT ✓</text>
+  </g>
+  <text x="668" y="616" font-size="11" fill="#2e7d32">＋ Hardware input stream updates async state — every consumer sees it.</text>
+
+  <!-- ============ SECTION 4 : trade-offs ============ -->
+  <text x="44" y="646" font-size="13.5" font-weight="700" fill="#0f172a">④ Trade-offs</text>
+  <text x="668" y="646" font-size="13.5" font-weight="700" fill="#0f172a">④ Trade-offs</text>
+
+  <!-- A trade-offs -->
+  <g font-size="11" fill="#0f172a">
+    <rect x="44" y="656" width="568" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+    <rect x="44" y="656" width="6" height="28" fill="#2e7d32"/>
+    <text x="62" y="674">✓  Concurrent — real user desktop untouched; no screen theft</text>
+
+    <rect x="44" y="690" width="568" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+    <rect x="44" y="690" width="6" height="28" fill="#2e7d32"/>
+    <text x="62" y="708">✓  No SwitchDesktop, so no secure-desktop orphan risk</text>
+
+    <rect x="44" y="724" width="568" height="28" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="44" y="724" width="6" height="28" fill="#c62828"/>
+    <text x="62" y="742">✗  Synthetic only — blind to Raw Input / DirectInput / GetAsyncKeyState</text>
+
+    <rect x="44" y="758" width="568" height="28" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="44" y="758" width="6" height="28" fill="#c62828"/>
+    <text x="62" y="776">✗  UIPI-limited; hover / drag / SetCapture semantics unreliable</text>
+  </g>
+
+  <!-- B trade-offs -->
+  <g font-size="11" fill="#0f172a">
+    <rect x="668" y="656" width="568" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+    <rect x="668" y="656" width="6" height="28" fill="#2e7d32"/>
+    <text x="686" y="674">✓  Real hardware input — works against every consumer, incl. games / anti-cheat</text>
+
+    <rect x="668" y="690" width="568" height="28" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="668" y="690" width="6" height="28" fill="#c62828"/>
+    <text x="686" y="708">✗  Steals the physical display; the user is locked out while active</text>
+
+    <rect x="668" y="724" width="568" height="62" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+    <rect x="668" y="724" width="6" height="62" fill="#c62828"/>
+    <text x="686" y="748">✗  Secure desktop (UAC / lock / Ctrl-Alt-Del) can seize input &amp; deny</text>
+    <text x="700" y="766">SwitchDesktop back → orphan risk; needs a watchdog holding its own</text>
+    <text x="700" y="782">switch-back handle to restore the user's Default desktop.</text>
+  </g>
+
+  <!-- ============ SHARED FOUNDATION ============ -->
+  <rect x="24" y="820" width="1232" height="40" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="640" y="837" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">Shared foundation — both modes run in one session, hence one Local\ kernel-object namespace for IPC.</text>
+  <text x="640" y="852" text-anchor="middle" font-size="10.5" fill="#475569">The desktop boundary isolates only USER objects (HWNDs, window messages, hooks) — never files, registry, kernel objects, or the process token.</text>
+</svg></div>
+      <figcaption><b>Figure 4.</b> The four decision layers — who holds the input role, how input reaches the sandbox, which consumers actually observe it, and the resulting trade-offs.</figcaption>
+    </figure>
+  </section>
+
+  <section id="sequence">
+    <div class="sec-head"><span class="sec-num">§5</span><h2>End-to-end: one keystroke's journey</h2></div>
+    <div class="prose">
+      <p>A single keypress crosses one desktop boundary inside the session: captured by the low-level hook, published into the lock-free ring with a release store, consumed by the agent, decoded, and posted as <code>WM_KEYDOWN</code>/<code>WM_CHAR</code>/<code>WM_KEYUP</code> against the target window.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 860" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="sequence__arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="5" y="5" width="1170" height="850" rx="16" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Title -->
+  <text x="590" y="40" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">End-to-End Keystroke Journey</text>
+  <text x="590" y="62" text-anchor="middle" font-size="13" fill="#475569">Hook → encode → transport → decode → inject → target window — crossing a desktop boundary inside one session</text>
+
+  <!-- ===================== REGIONS ===================== -->
+  <rect x="25" y="95" width="325" height="650" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <rect x="366" y="95" width="324" height="650" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <rect x="706" y="95" width="449" height="650" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+
+  <!-- Region headers -->
+  <text x="42" y="121" font-size="12.5" font-weight="700" fill="#0d47a1">INTERACTIVE INPUT DESKTOP</text>
+  <text x="42" y="138" font-size="11" fill="#1565c0">WinSta0\Default · visible · receives hardware input</text>
+
+  <text x="382" y="121" font-size="12.5" font-weight="700" fill="#334155">SESSION KERNEL-OBJECT NAMESPACE</text>
+  <text x="382" y="138" font-size="11" fill="#64748b">Local\ BaseNamedObjects · desktop-independent</text>
+
+  <text x="722" y="121" font-size="12.5" font-weight="700" fill="#4527a0">HIDDEN VIRTUAL DESKTOP</text>
+  <text x="722" y="138" font-size="11" fill="#5e35b1">WinSta0\Sandbox · never SwitchDesktop'd → no input</text>
+
+  <!-- Desktop walls -->
+  <line x1="358" y1="150" x2="358" y2="745" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <line x1="698" y1="150" x2="698" y2="745" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text transform="rotate(-90 361 500)" x="361" y="500" text-anchor="middle" font-size="10" fill="#64748b">desktop wall — USER objects stop</text>
+  <text transform="rotate(-90 701 500)" x="701" y="500" text-anchor="middle" font-size="10" fill="#64748b">desktop wall — USER objects stop</text>
+
+  <!-- ===================== STAGE CARDS ===================== -->
+
+  <!-- 1 CAPTURE -->
+  <rect x="38" y="150" width="300" height="180" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <circle cx="58" cy="171" r="13" fill="#e65100"/>
+  <text x="58" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">1</text>
+  <text x="78" y="176" font-size="13.5" font-weight="700" fill="#7c2d12">CAPTURE — WH_KEYBOARD_LL hook</text>
+  <text x="54" y="200" font-size="12.5" fill="#0f172a">Runs on a thread with a message loop</text>
+  <text x="54" y="218" font-size="12.5" fill="#0f172a">(no pump ⇒ callback never fires)</text>
+  <text x="54" y="236" font-size="12.5" fill="#0f172a">Callback executes in the installing thread</text>
+  <text x="54" y="254" font-size="12.5" fill="#1b5e20">Return ≠ 0 ⇒ suppress (route only to us)</text>
+  <text x="54" y="272" font-size="12.5" fill="#0f172a">Finish &lt; LowLevelHooksTimeout (≤1000 ms)</text>
+  <text x="54" y="290" font-size="12.5" fill="#0f172a">or the hook is silently removed</text>
+  <text x="54" y="314" font-size="12" fill="#334155">Reads KBDLLHOOKSTRUCT: vkCode·scanCode·flags</text>
+
+  <!-- 2 ENCODE -->
+  <rect x="38" y="360" width="300" height="165" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <circle cx="58" cy="381" r="13" fill="#e65100"/>
+  <text x="58" y="385" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">2</text>
+  <text x="78" y="386" font-size="13.5" font-weight="700" fill="#7c2d12">ENCODE — capture &amp; hand off</text>
+  <text x="54" y="411" font-size="12.5" fill="#b71c1c">No blocking / alloc / syscall in the callback</text>
+  <text x="54" y="429" font-size="12.5" fill="#0f172a">Write fixed record → lock-free ring slot</text>
+  <text x="54" y="447" font-size="12.5" fill="#0f172a">seqlock stamp; write payload, then index</text>
+  <text x="54" y="465" font-size="12.5" fill="#0f172a">Release store = plain MOV on x86/64</text>
+  <text x="54" y="483" font-size="12" fill="#334155">(StoreStore kept in order; compiler barrier)</text>
+
+  <!-- 3 TRANSPORT -->
+  <rect x="378" y="215" width="300" height="340" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <circle cx="398" cy="240" r="13" fill="#e65100"/>
+  <text x="398" y="244" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">3</text>
+  <text x="418" y="245" font-size="13.5" font-weight="700" fill="#7c2d12">TRANSPORT (crosses the wall)</text>
+  <text x="394" y="270" font-size="12.5" fill="#b71c1c">USER objects (windows, messages, hooks)</text>
+  <text x="394" y="288" font-size="12.5" fill="#b71c1c">are desktop-bound and cannot cross here.</text>
+  <text x="394" y="310" font-size="12.5" fill="#1b5e20">Kernel objects are desktop-independent:</text>
+  <text x="394" y="332" font-size="12.5" fill="#0f172a">• Section (pagefile-backed) = shared ring</text>
+  <text x="394" y="350" font-size="12" fill="#334155">   for the high-rate keystroke stream</text>
+  <text x="394" y="372" font-size="12.5" fill="#0f172a">• Auto-reset event = one wake per burst</text>
+  <text x="394" y="390" font-size="12" fill="#334155">   (coalesces notifications, no counting)</text>
+  <text x="394" y="412" font-size="12.5" fill="#0f172a">• Message-mode pipe = framed control</text>
+  <text x="394" y="430" font-size="12" fill="#334155">   handshake / version / flush / shutdown</text>
+  <text x="394" y="452" font-size="12.5" fill="#0f172a">Named in Local\ — same session, so no</text>
+  <text x="394" y="470" font-size="12.5" fill="#0f172a">Global\ and no SeCreateGlobalPrivilege</text>
+
+  <!-- 4 DECODE -->
+  <rect x="720" y="150" width="420" height="160" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <circle cx="740" cy="171" r="13" fill="#e65100"/>
+  <text x="740" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">4</text>
+  <text x="760" y="176" font-size="13.5" font-weight="700" fill="#7c2d12">DECODE — consumer on the sandbox desktop</text>
+  <text x="736" y="201" font-size="12.5" fill="#0f172a">Dedicated thread SetThreadDesktop'd to the sandbox</text>
+  <text x="736" y="219" font-size="12.5" fill="#0f172a">before it owns any window or hook</text>
+  <text x="736" y="237" font-size="12.5" fill="#0f172a">Acquire-load the published index; copy the slot</text>
+  <text x="736" y="255" font-size="12.5" fill="#0f172a">Re-check seqlock before &amp; after the copy</text>
+  <text x="736" y="273" font-size="12" fill="#b71c1c">(reject a torn / half-overwritten record)</text>
+
+  <!-- 5 INJECT -->
+  <rect x="720" y="340" width="420" height="215" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <circle cx="740" cy="361" r="13" fill="#e65100"/>
+  <text x="740" y="365" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">5</text>
+  <text x="760" y="366" font-size="13.5" font-weight="700" fill="#7c2d12">INJECT — message layer, not SendInput</text>
+  <text x="736" y="391" font-size="12.5" fill="#b71c1c">SendInput reaches only the current INPUT desktop</text>
+  <text x="736" y="409" font-size="12.5" fill="#b71c1c">⇒ it does nothing on this hidden desktop</text>
+  <text x="736" y="431" font-size="12.5" fill="#0f172a">Drive target windows through the message queue:</text>
+  <text x="736" y="449" font-size="12.5" fill="#0f172a">EnumDesktopWindows(hDesk) → top-level HWNDs</text>
+  <text x="736" y="467" font-size="12.5" fill="#0f172a">EnumChildWindows → the actual leaf control</text>
+  <text x="736" y="485" font-size="12.5" fill="#0f172a">PostMessage WM_KEYDOWN / WM_CHAR / WM_KEYUP</text>
+  <text x="736" y="503" font-size="12" fill="#334155">lParam: MapVirtualKey scan code + extended bit 24;</text>
+  <text x="736" y="521" font-size="12" fill="#334155">WM_KEYUP sets bit 30 &amp; bit 31</text>
+  <text x="736" y="543" font-size="12.5" fill="#b71c1c">UIPI: injector integrity ≥ target, or post silently no-ops</text>
+
+  <!-- 6 TARGET -->
+  <rect x="720" y="585" width="420" height="115" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <circle cx="740" cy="606" r="13" fill="#e65100"/>
+  <text x="740" y="610" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">6</text>
+  <text x="760" y="611" font-size="13.5" font-weight="700" fill="#7c2d12">TARGET WINDOW</text>
+  <text x="736" y="636" font-size="12.5" fill="#0f172a">GUI app reads via GetMessage / TranslateMessage</text>
+  <text x="736" y="658" font-size="12.5" fill="#b71c1c">Synthetic only — invisible to Raw Input, DirectInput</text>
+  <text x="736" y="676" font-size="12.5" fill="#b71c1c">and GetAsyncKeyState polling (games / anti-cheat)</text>
+
+  <!-- ===================== ARROWS ===================== -->
+  <line x1="188" y1="330" x2="188" y2="358" stroke="#334155" stroke-width="2" marker-end="url(#sequence__arrow)"/>
+  <line x1="338" y1="442" x2="376" y2="442" stroke="#334155" stroke-width="2" marker-end="url(#sequence__arrow)"/>
+  <line x1="678" y1="272" x2="718" y2="230" stroke="#334155" stroke-width="2" marker-end="url(#sequence__arrow)"/>
+  <line x1="930" y1="310" x2="930" y2="338" stroke="#334155" stroke-width="2" marker-end="url(#sequence__arrow)"/>
+  <line x1="930" y1="555" x2="930" y2="583" stroke="#334155" stroke-width="2" marker-end="url(#sequence__arrow)"/>
+
+  <!-- Arrow labels (pills) -->
+  <g font-size="11" fill="#334155" text-anchor="middle">
+    <rect x="160" y="336" width="56" height="16" rx="4" fill="#ffffff" stroke="#cbd5e1"/><text x="188" y="348">hand off</text>
+    <rect x="329" y="424" width="52" height="16" rx="4" fill="#ffffff" stroke="#cbd5e1"/><text x="355" y="436">publish</text>
+    <rect x="662" y="238" width="62" height="16" rx="4" fill="#ffffff" stroke="#cbd5e1"/><text x="693" y="250">consume</text>
+    <rect x="903" y="316" width="54" height="16" rx="4" fill="#ffffff" stroke="#cbd5e1"/><text x="930" y="328">record</text>
+    <rect x="905" y="561" width="50" height="16" rx="4" fill="#ffffff" stroke="#cbd5e1"/><text x="930" y="573">post</text>
+  </g>
+
+  <!-- ===================== FOOTER ===================== -->
+  <g font-size="12" fill="#334155">
+    <rect x="40" y="770" width="15" height="15" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="62" y="782">Interactive input desktop</text>
+    <rect x="255" y="770" width="15" height="15" rx="3" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+    <text x="277" y="782">Hidden virtual desktop</text>
+    <rect x="455" y="770" width="15" height="15" rx="3" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+    <text x="477" y="782">Kernel-object transport</text>
+    <rect x="665" y="770" width="15" height="15" rx="3" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+    <text x="687" y="782">Pipeline stage</text>
+  </g>
+  <rect x="30" y="800" width="1120" height="30" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="590" y="820" text-anchor="middle" font-size="12.5" fill="#b71c1c">Isolation is UI-only: files · registry · kernel objects · process token · clipboard all stay shared across the wall — a desktop is not a security sandbox.</text>
+</svg></div>
+      <figcaption><b>Figure 5.</b> Capture → encode → kernel-object transport → decode → message injection → target window. USER objects stop at the wall; kernel objects carry the stream across it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="lifecycle">
+    <div class="sec-head"><span class="sec-num">§6</span><h2>Lifecycle &amp; the teardown that never orphans</h2></div>
+    <div class="prose">
+      <p>A desktop object lives while any handle, thread, or window references it. The load-bearing hazard is <strong>never leaving the user on the hidden desktop</strong>: teardown restores the captured input desktop first, drains hosted apps, detaches helper threads, then closes the last handle — in strict reverse order of creation.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 850" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="lifecycle__arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-end">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- backdrop for dark-mode legibility -->
+  <rect x="8" y="8" width="1384" height="834" rx="16" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- title -->
+  <text x="50" y="48" font-size="18" font-weight="700" fill="#0f172a">Sandbox Desktop — Lifecycle State Machine</text>
+  <text x="50" y="72" font-size="12.5" fill="#475569">Win32 HDESK under WinSta0:  Created → Populated → Foreground / Background → Draining → Destroyed</text>
+
+  <!-- legend -->
+  <rect x="955" y="30" width="12" height="12" rx="2" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="973" y="40" font-size="11" fill="#334155">Setup / logic</text>
+  <rect x="1085" y="30" width="12" height="12" rx="2" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="1103" y="40" font-size="11" fill="#334155">Input desktop</text>
+  <rect x="1232" y="30" width="12" height="12" rx="2" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1250" y="40" font-size="11" fill="#334155">Draining</text>
+  <rect x="955" y="52" width="12" height="12" rx="2" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="973" y="62" font-size="11" fill="#334155">Hidden desktop</text>
+  <rect x="1122" y="52" width="12" height="12" rx="2" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="1140" y="62" font-size="11" fill="#334155">Destroyed</text>
+
+  <!-- ===================== EDGES ===================== -->
+  <!-- Created -> Populated -->
+  <line x1="225" y1="205" x2="325" y2="205" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <!-- Populated -> Background -->
+  <line x1="510" y1="205" x2="608" y2="288" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <!-- Background -> Foreground (up) -->
+  <line x1="635" y1="250" x2="635" y2="192" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <!-- Foreground -> Background (down) -->
+  <line x1="835" y1="190" x2="835" y2="248" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <!-- Foreground -> Draining -->
+  <line x1="860" y1="140" x2="958" y2="188" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <!-- Background -> Draining -->
+  <line x1="860" y1="300" x2="958" y2="228" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <!-- Draining -> Destroyed -->
+  <line x1="1137" y1="205" x2="1231" y2="205" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+
+  <!-- ===================== STATE BOXES ===================== -->
+  <!-- Created -->
+  <rect x="50" y="150" width="175" height="110" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="63" y="176" font-size="14" font-weight="700" fill="#0f172a">Created</text>
+  <text x="63" y="196" font-size="10" fill="#334155">CreateDesktopEx under WinSta0</text>
+  <text x="63" y="211" font-size="10" fill="#334155">needs DESKTOP_CREATEWINDOW</text>
+  <text x="63" y="226" font-size="10" fill="#334155">(GUI surface, never SwitchDesktop'd)</text>
+  <text x="63" y="245" font-size="10" fill="#64748b">NULL SD ⇒ inherits winsta SD</text>
+
+  <!-- Populated -->
+  <rect x="325" y="150" width="185" height="110" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="338" y="176" font-size="14" font-weight="700" fill="#0f172a">Populated</text>
+  <text x="338" y="196" font-size="10" fill="#334155">Dedicated thread bound, PRE-UI</text>
+  <text x="338" y="211" font-size="10" fill="#334155">(before any window/hook — else</text>
+  <text x="338" y="226" font-size="10" fill="#c62828">ERROR_BUSY 0xAA)</text>
+  <text x="338" y="245" font-size="10" fill="#334155">lpDesktop = WinSta0\Sandbox</text>
+
+  <!-- live-ref note under Populated -->
+  <rect x="325" y="268" width="185" height="24" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="417" y="284" font-size="10" fill="#334155" text-anchor="middle">hold live ref: handle + thread + window</text>
+
+  <!-- Foreground (input desktop) -->
+  <rect x="610" y="90" width="250" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="626" y="116" font-size="14" font-weight="700" fill="#0f172a">Foreground — input desktop</text>
+  <text x="626" y="138" font-size="10.5" fill="#334155">Visible; receives hardware +</text>
+  <text x="626" y="153" font-size="10.5" fill="#334155">synthesized input (SendInput).</text>
+  <text x="626" y="175" font-size="10.5" fill="#2e7d32">At most one input desktop per session.</text>
+
+  <!-- Background (hidden) -->
+  <rect x="610" y="250" width="250" height="100" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+  <text x="626" y="276" font-size="14" font-weight="700" fill="#0f172a">Background — hidden</text>
+  <text x="626" y="298" font-size="10.5" fill="#334155">No hardware / injected input while hidden.</text>
+  <text x="626" y="313" font-size="10.5" fill="#334155">Drive HWNDs via PostMessage /</text>
+  <text x="626" y="328" font-size="10.5" fill="#334155">SendMessageTimeout; IPC over Local\ objects.</text>
+
+  <!-- Draining -->
+  <rect x="960" y="150" width="175" height="110" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="973" y="176" font-size="14" font-weight="700" fill="#0f172a">Draining</text>
+  <text x="973" y="198" font-size="10.5" fill="#334155">Quiesce hosted apps;</text>
+  <text x="973" y="214" font-size="10.5" fill="#334155">restore input desktop;</text>
+  <text x="973" y="230" font-size="10.5" fill="#334155">detach helper threads.</text>
+
+  <!-- Destroyed -->
+  <rect x="1235" y="150" width="150" height="110" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="2"/>
+  <text x="1248" y="176" font-size="14" font-weight="700" fill="#0f172a">Destroyed</text>
+  <text x="1248" y="198" font-size="10" fill="#334155">Freed only when the</text>
+  <text x="1248" y="213" font-size="10" fill="#334155">last HDESK handle is</text>
+  <text x="1248" y="228" font-size="10" fill="#334155">closed AND no thread /</text>
+  <text x="1248" y="243" font-size="10" fill="#334155">window references it.</text>
+
+  <!-- ===================== EDGE PILLS ===================== -->
+  <!-- A -->
+  <rect x="226" y="194" width="98" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="275" y="209" font-size="10" fill="#0f172a" text-anchor="middle">SetThreadDesktop</text>
+  <!-- B -->
+  <rect x="505" y="236" width="112" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="561" y="251" font-size="10" fill="#0f172a" text-anchor="middle">not switched ⇒ hidden</text>
+  <!-- C toggle -->
+  <rect x="648" y="202" width="174" height="36" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="735" y="216" font-size="11" font-weight="600" fill="#0f172a" text-anchor="middle">SwitchDesktop  ⇅  input ⇄ hidden</text>
+  <text x="735" y="230" font-size="9" fill="#64748b" text-anchor="middle">requires DESKTOP_SWITCHDESKTOP</text>
+  <!-- D -->
+  <rect x="836" y="154" width="118" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="895" y="169" font-size="11" fill="#0f172a" text-anchor="middle">begin teardown</text>
+  <!-- F -->
+  <rect x="1139" y="194" width="92" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="1185" y="209" font-size="11" fill="#0f172a" text-anchor="middle">CloseDesktop</text>
+
+  <!-- ===================== CAVEATS ===================== -->
+  <rect x="50" y="300" width="540" height="80" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="64" y="321" font-size="10" fill="#7c2d12">⚠  CreateDesktopEx creates on the process's CURRENT window station and needs DESKTOP_CREATEWINDOW.</text>
+  <text x="64" y="338" font-size="10" fill="#7c2d12">Docs say it "assigns the desktop to the calling thread" — but the thread is NOT actually switched.</text>
+  <text x="64" y="355" font-size="10" fill="#7c2d12">A separate SetThreadDesktop is required; it fails ERROR_BUSY if the thread owns a window or hook.</text>
+  <text x="64" y="372" font-size="10" fill="#7c2d12">Bind first, on a fresh thread, before creating UI. (lpDesktop does the same for hosted procs.)</text>
+
+  <rect x="610" y="372" width="560" height="90" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="624" y="392" font-size="10" fill="#7f1d1d">⚠  A secured desktop (Winlogon / UAC / lock / Ctrl+Alt+Del) can seize the input role and deny SwitchDesktop</text>
+  <text x="624" y="409" font-size="10" fill="#7f1d1d">to normal-privilege callers — it may even return success without switching. Restore loop: capture the real</text>
+  <text x="624" y="426" font-size="10" fill="#7f1d1d">target via OpenInputDesktop (compare UOI_NAME — do not assume "Default"), then poll + back off. atexit</text>
+  <text x="624" y="443" font-size="10" fill="#7f1d1d">won't run on crash, so pair the restore discipline with an external watchdog holding its own switch-back handle.</text>
+
+  <!-- ===================== TEARDOWN PANEL ===================== -->
+  <rect x="50" y="480" width="1285" height="235" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="70" y="510" font-size="15" font-weight="700" fill="#0f172a">Teardown ordering — strict; never orphan the input desktop, never leak the desktop object</text>
+
+  <!-- step arrows -->
+  <line x1="298" y1="622" x2="322" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <line x1="543" y1="622" x2="567" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <line x1="788" y1="622" x2="812" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+  <line x1="1033" y1="622" x2="1057" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#lifecycle__arrow)"/>
+
+  <!-- S1 -->
+  <rect x="78" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="92" y="566" font-size="12.5" font-weight="700" fill="#2e7d32">1 · Restore input desktop</text>
+  <text x="92" y="588" font-size="10" fill="#334155">SwitchDesktop back to the</text>
+  <text x="92" y="602" font-size="10" fill="#334155">captured restore target. If a</text>
+  <text x="92" y="616" font-size="10" fill="#334155">secure desktop holds input,</text>
+  <text x="92" y="630" font-size="10" fill="#334155">poll OpenInputDesktop + back</text>
+  <text x="92" y="644" font-size="10" fill="#334155">off. Never leave the user on</text>
+  <text x="92" y="658" font-size="10" fill="#334155">the hidden desktop.</text>
+
+  <!-- S2 -->
+  <rect x="323" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="337" y="566" font-size="12.5" font-weight="700" fill="#e65100">2 · Exit hosted apps</text>
+  <text x="337" y="588" font-size="10" fill="#334155">Sandbox processes' windows</text>
+  <text x="337" y="602" font-size="10" fill="#334155">and threads keep the desktop</text>
+  <text x="337" y="616" font-size="10" fill="#334155">alive — terminate them (or</text>
+  <text x="337" y="630" font-size="10" fill="#334155">confirm they exit) before</text>
+  <text x="337" y="644" font-size="10" fill="#334155">releasing your own refs.</text>
+
+  <!-- S3 -->
+  <rect x="568" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="582" y="566" font-size="12.5" font-weight="700" fill="#e65100">3 · Detach helper threads</text>
+  <text x="582" y="588" font-size="10" fill="#334155">SetThreadDesktop each helper</text>
+  <text x="582" y="602" font-size="10" fill="#334155">thread back to Default, so no</text>
+  <text x="582" y="616" font-size="10" fill="#334155">thread stays bound to the</text>
+  <text x="582" y="630" font-size="10" fill="#334155">desktop. A bound thread</text>
+  <text x="582" y="644" font-size="10" fill="#334155">alone keeps it alive.</text>
+
+  <!-- S4 -->
+  <rect x="813" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="827" y="566" font-size="12.5" font-weight="700" fill="#4527a0">4 · Release USER objects</text>
+  <text x="827" y="588" font-size="10" fill="#334155">Destroy the holder window</text>
+  <text x="827" y="602" font-size="10" fill="#334155">and uninstall LL hooks — the</text>
+  <text x="827" y="616" font-size="10" fill="#334155">last windows/hooks that</text>
+  <text x="827" y="630" font-size="10" fill="#334155">reference the desktop.</text>
+
+  <!-- S5 -->
+  <rect x="1058" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="1072" y="566" font-size="12.5" font-weight="700" fill="#c62828">5 · CloseDesktop</text>
+  <text x="1072" y="588" font-size="10" fill="#334155">Close the final HDESK handle.</text>
+  <text x="1072" y="602" font-size="10" fill="#334155">Closes one handle only; the</text>
+  <text x="1072" y="616" font-size="10" fill="#334155">object is freed only when the</text>
+  <text x="1072" y="630" font-size="10" fill="#334155">last handle closes AND no</text>
+  <text x="1072" y="644" font-size="10" fill="#334155">thread/window references</text>
+  <text x="1072" y="658" font-size="10" fill="#334155">remain.</text>
+
+  <!-- footnote / scope -->
+  <text x="50" y="748" font-size="10.5" fill="#475569">Scope: the desktop boundary isolates only USER objects — window handles, window messages, and hooks (per-desktop), plus journaling / global input. It does NOT isolate</text>
+  <text x="50" y="764" font-size="10.5" fill="#475569">files, registry, kernel objects, network, the process token, or process enumeration; the clipboard and global atoms are window-station-scoped, so two desktops under</text>
+  <text x="50" y="780" font-size="10.5" fill="#475569">WinSta0 share them. A hidden desktop is a UI-containment / input-routing primitive — not a security sandbox.</text>
+</svg></div>
+      <figcaption><b>Figure 6.</b> Created → Populated → Foreground/Background → Draining → Destroyed, with the strict five-step teardown and the secure-desktop restore discipline.</figcaption>
+    </figure>
+    <div class="note danger"><span class="lbl">⚠ CreateDesktopEx</span> &nbsp;The docs say it "assigns the desktop to the calling thread," but the running thread is <strong>not</strong> switched. A separate <code>SetThreadDesktop</code> is required — and it fails <code>ERROR_BUSY</code> if that thread already owns a window or hook. Bind first, on a fresh thread, before creating any UI.</div>
+  </section>
+
+  <section id="verified">
+    <div class="sec-head"><span class="sec-num">§7</span><h2>Corrections the verification pass caught</h2></div>
+    <div class="prose"><p class="sub">A first-pass mental model gets several Win32 details subtly wrong. These were surfaced by adversarial fact-checking against Microsoft documentation and folded into the schematic.</p></div>
+    <div class="grid">
+      <div class="card"><div class="topic">named pipes ≠ BaseNamedObjects</div><p>Sections and events resolve in the per-session <code>Local\</code> namespace, but a <span class="myth">named pipe is not a BNO object</span> — it lives in <code>\Device\NamedPipe</code> as <code>\\.\pipe\name</code>. <span class="fix">Both still work cross-desktop in one session.</span></p></div>
+      <div class="card"><div class="topic">cross-desktop PostMessage</div><p><span class="myth">You cannot reliably message a window on another desktop.</span> <span class="fix">The injector thread must be attached to the sandbox desktop</span> (<code>SetThreadDesktop</code>) — messages travel only between same-desktop processes.</p></div>
+      <div class="card"><div class="topic">SwitchDesktop return value</div><p><span class="myth">A success return does not guarantee the switch happened.</span> On a locked station it can return nonzero while the secure desktop keeps input. <span class="fix">Verify by re-reading the input desktop's <code>UOI_NAME</code>.</span></p></div>
+      <div class="card"><div class="topic">LL-hook timeout</div><p>The "300&nbsp;ms" default is folklore. <span class="fix">Win10 1709+ hard-caps the effective <code>LowLevelHooksTimeout</code> at 1000&nbsp;ms</span>; an over-budget callback is passed through and the hook can be silently removed.</p></div>
+      <div class="card"><div class="topic">mouse message coordinates</div><p><code>WM_MOUSEMOVE</code> and all <code>WM_*BUTTON*</code> carry <span class="fix">client</span> coordinates; <span class="myth">only <code>WM_MOUSEWHEEL</code>/<code>HWHEEL</code> use screen</span> coordinates. Mixing them mislocates every click.</p></div>
+      <div class="card"><div class="topic">extended-key scan code</div><p><code>MapVirtualKey(vk, MAPVK_VK_TO_VSC)</code> <span class="myth">strips the extended bit</span> for the nav cluster and <code>VK_RETURN</code>. <span class="fix">Set lParam bit 24 yourself</span> or use <code>MAPVK_VK_TO_VSC_EX</code>.</p></div>
+      <div class="card"><div class="topic">CloseDesktop failure</div><p><span class="myth">It does not fail because a window references the desktop.</span> Cross-process, it succeeds but the desktop persists via other references. The window/hook rule belongs to <code>SetThreadDesktop</code>.</p></div>
+      <div class="card"><div class="topic">WinSta0 is per-session</div><p><span class="myth">Not a single global object.</span> Every console and RDP session has its own interactive <code>WinSta0</code>; Session&nbsp;0's is headless. <span class="fix">Target the interactive station of the specific user session.</span></p></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>This page is the visual companion to the full design-only schematic — <code>VIRTUAL-DESKTOP-INPUT-FORWARDING.md</code> — which carries the complete API contracts, security model, failure-mode tables, and the explicit non-goals. Diagrams are hand-authored SVG.</p>
+    <p style="margin-top:14px; color:var(--faint)"><span style="font-family:var(--mono)">design-only</span> · no shipped code · Win32 desktop-object (HDESK) model · same-session, current-window-station scope.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    function current() {
+      var set = root.getAttribute('data-theme');
+      if (set) return set;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      btn.textContent = next === 'dark' ? '☀ light' : '☾ dark';
+    });
+  })();
+</script>

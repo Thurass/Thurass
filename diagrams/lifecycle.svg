@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 850" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-end">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- backdrop for dark-mode legibility -->
+  <rect x="8" y="8" width="1384" height="834" rx="16" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- title -->
+  <text x="50" y="48" font-size="18" font-weight="700" fill="#0f172a">Sandbox Desktop — Lifecycle State Machine</text>
+  <text x="50" y="72" font-size="12.5" fill="#475569">Win32 HDESK under WinSta0:  Created → Populated → Foreground / Background → Draining → Destroyed</text>
+
+  <!-- legend -->
+  <rect x="955" y="30" width="12" height="12" rx="2" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="973" y="40" font-size="11" fill="#334155">Setup / logic</text>
+  <rect x="1085" y="30" width="12" height="12" rx="2" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="1103" y="40" font-size="11" fill="#334155">Input desktop</text>
+  <rect x="1232" y="30" width="12" height="12" rx="2" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1250" y="40" font-size="11" fill="#334155">Draining</text>
+  <rect x="955" y="52" width="12" height="12" rx="2" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="973" y="62" font-size="11" fill="#334155">Hidden desktop</text>
+  <rect x="1122" y="52" width="12" height="12" rx="2" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="1140" y="62" font-size="11" fill="#334155">Destroyed</text>
+
+  <!-- ===================== EDGES ===================== -->
+  <!-- Created -> Populated -->
+  <line x1="225" y1="205" x2="325" y2="205" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Populated -> Background -->
+  <line x1="510" y1="205" x2="608" y2="288" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Background -> Foreground (up) -->
+  <line x1="635" y1="250" x2="635" y2="192" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Foreground -> Background (down) -->
+  <line x1="835" y1="190" x2="835" y2="248" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Foreground -> Draining -->
+  <line x1="860" y1="140" x2="958" y2="188" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Background -> Draining -->
+  <line x1="860" y1="300" x2="958" y2="228" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Draining -> Destroyed -->
+  <line x1="1137" y1="205" x2="1231" y2="205" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===================== STATE BOXES ===================== -->
+  <!-- Created -->
+  <rect x="50" y="150" width="175" height="110" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="63" y="176" font-size="14" font-weight="700" fill="#0f172a">Created</text>
+  <text x="63" y="196" font-size="10" fill="#334155">CreateDesktopEx under WinSta0</text>
+  <text x="63" y="211" font-size="10" fill="#334155">needs DESKTOP_CREATEWINDOW</text>
+  <text x="63" y="226" font-size="10" fill="#334155">(GUI surface, never SwitchDesktop'd)</text>
+  <text x="63" y="245" font-size="10" fill="#64748b">NULL SD ⇒ inherits winsta SD</text>
+
+  <!-- Populated -->
+  <rect x="325" y="150" width="185" height="110" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="338" y="176" font-size="14" font-weight="700" fill="#0f172a">Populated</text>
+  <text x="338" y="196" font-size="10" fill="#334155">Dedicated thread bound, PRE-UI</text>
+  <text x="338" y="211" font-size="10" fill="#334155">(before any window/hook — else</text>
+  <text x="338" y="226" font-size="10" fill="#c62828">ERROR_BUSY 0xAA)</text>
+  <text x="338" y="245" font-size="10" fill="#334155">lpDesktop = WinSta0\Sandbox</text>
+
+  <!-- live-ref note under Populated -->
+  <rect x="325" y="268" width="185" height="24" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="417" y="284" font-size="10" fill="#334155" text-anchor="middle">hold live ref: handle + thread + window</text>
+
+  <!-- Foreground (input desktop) -->
+  <rect x="610" y="90" width="250" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="626" y="116" font-size="14" font-weight="700" fill="#0f172a">Foreground — input desktop</text>
+  <text x="626" y="138" font-size="10.5" fill="#334155">Visible; receives hardware +</text>
+  <text x="626" y="153" font-size="10.5" fill="#334155">synthesized input (SendInput).</text>
+  <text x="626" y="175" font-size="10.5" fill="#2e7d32">At most one input desktop per session.</text>
+
+  <!-- Background (hidden) -->
+  <rect x="610" y="250" width="250" height="100" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="2"/>
+  <text x="626" y="276" font-size="14" font-weight="700" fill="#0f172a">Background — hidden</text>
+  <text x="626" y="298" font-size="10.5" fill="#334155">No hardware / injected input while hidden.</text>
+  <text x="626" y="313" font-size="10.5" fill="#334155">Drive HWNDs via PostMessage /</text>
+  <text x="626" y="328" font-size="10.5" fill="#334155">SendMessageTimeout; IPC over Local\ objects.</text>
+
+  <!-- Draining -->
+  <rect x="960" y="150" width="175" height="110" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="973" y="176" font-size="14" font-weight="700" fill="#0f172a">Draining</text>
+  <text x="973" y="198" font-size="10.5" fill="#334155">Quiesce hosted apps;</text>
+  <text x="973" y="214" font-size="10.5" fill="#334155">restore input desktop;</text>
+  <text x="973" y="230" font-size="10.5" fill="#334155">detach helper threads.</text>
+
+  <!-- Destroyed -->
+  <rect x="1235" y="150" width="150" height="110" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="2"/>
+  <text x="1248" y="176" font-size="14" font-weight="700" fill="#0f172a">Destroyed</text>
+  <text x="1248" y="198" font-size="10" fill="#334155">Freed only when the</text>
+  <text x="1248" y="213" font-size="10" fill="#334155">last HDESK handle is</text>
+  <text x="1248" y="228" font-size="10" fill="#334155">closed AND no thread /</text>
+  <text x="1248" y="243" font-size="10" fill="#334155">window references it.</text>
+
+  <!-- ===================== EDGE PILLS ===================== -->
+  <!-- A -->
+  <rect x="226" y="194" width="98" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="275" y="209" font-size="10" fill="#0f172a" text-anchor="middle">SetThreadDesktop</text>
+  <!-- B -->
+  <rect x="505" y="236" width="112" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="561" y="251" font-size="10" fill="#0f172a" text-anchor="middle">not switched ⇒ hidden</text>
+  <!-- C toggle -->
+  <rect x="648" y="202" width="174" height="36" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="735" y="216" font-size="11" font-weight="600" fill="#0f172a" text-anchor="middle">SwitchDesktop  ⇅  input ⇄ hidden</text>
+  <text x="735" y="230" font-size="9" fill="#64748b" text-anchor="middle">requires DESKTOP_SWITCHDESKTOP</text>
+  <!-- D -->
+  <rect x="836" y="154" width="118" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="895" y="169" font-size="11" fill="#0f172a" text-anchor="middle">begin teardown</text>
+  <!-- F -->
+  <rect x="1139" y="194" width="92" height="22" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="1185" y="209" font-size="11" fill="#0f172a" text-anchor="middle">CloseDesktop</text>
+
+  <!-- ===================== CAVEATS ===================== -->
+  <rect x="50" y="300" width="540" height="80" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="64" y="321" font-size="10" fill="#7c2d12">⚠  CreateDesktopEx creates on the process's CURRENT window station and needs DESKTOP_CREATEWINDOW.</text>
+  <text x="64" y="338" font-size="10" fill="#7c2d12">Docs say it "assigns the desktop to the calling thread" — but the thread is NOT actually switched.</text>
+  <text x="64" y="355" font-size="10" fill="#7c2d12">A separate SetThreadDesktop is required; it fails ERROR_BUSY if the thread owns a window or hook.</text>
+  <text x="64" y="372" font-size="10" fill="#7c2d12">Bind first, on a fresh thread, before creating UI. (lpDesktop does the same for hosted procs.)</text>
+
+  <rect x="610" y="372" width="560" height="90" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="624" y="392" font-size="10" fill="#7f1d1d">⚠  A secured desktop (Winlogon / UAC / lock / Ctrl+Alt+Del) can seize the input role and deny SwitchDesktop</text>
+  <text x="624" y="409" font-size="10" fill="#7f1d1d">to normal-privilege callers — it may even return success without switching. Restore loop: capture the real</text>
+  <text x="624" y="426" font-size="10" fill="#7f1d1d">target via OpenInputDesktop (compare UOI_NAME — do not assume "Default"), then poll + back off. atexit</text>
+  <text x="624" y="443" font-size="10" fill="#7f1d1d">won't run on crash, so pair the restore discipline with an external watchdog holding its own switch-back handle.</text>
+
+  <!-- ===================== TEARDOWN PANEL ===================== -->
+  <rect x="50" y="480" width="1285" height="235" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="70" y="510" font-size="15" font-weight="700" fill="#0f172a">Teardown ordering — strict; never orphan the input desktop, never leak the desktop object</text>
+
+  <!-- step arrows -->
+  <line x1="298" y1="622" x2="322" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="543" y1="622" x2="567" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="788" y1="622" x2="812" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1033" y1="622" x2="1057" y2="622" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- S1 -->
+  <rect x="78" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="92" y="566" font-size="12.5" font-weight="700" fill="#2e7d32">1 · Restore input desktop</text>
+  <text x="92" y="588" font-size="10" fill="#334155">SwitchDesktop back to the</text>
+  <text x="92" y="602" font-size="10" fill="#334155">captured restore target. If a</text>
+  <text x="92" y="616" font-size="10" fill="#334155">secure desktop holds input,</text>
+  <text x="92" y="630" font-size="10" fill="#334155">poll OpenInputDesktop + back</text>
+  <text x="92" y="644" font-size="10" fill="#334155">off. Never leave the user on</text>
+  <text x="92" y="658" font-size="10" fill="#334155">the hidden desktop.</text>
+
+  <!-- S2 -->
+  <rect x="323" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="337" y="566" font-size="12.5" font-weight="700" fill="#e65100">2 · Exit hosted apps</text>
+  <text x="337" y="588" font-size="10" fill="#334155">Sandbox processes' windows</text>
+  <text x="337" y="602" font-size="10" fill="#334155">and threads keep the desktop</text>
+  <text x="337" y="616" font-size="10" fill="#334155">alive — terminate them (or</text>
+  <text x="337" y="630" font-size="10" fill="#334155">confirm they exit) before</text>
+  <text x="337" y="644" font-size="10" fill="#334155">releasing your own refs.</text>
+
+  <!-- S3 -->
+  <rect x="568" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="582" y="566" font-size="12.5" font-weight="700" fill="#e65100">3 · Detach helper threads</text>
+  <text x="582" y="588" font-size="10" fill="#334155">SetThreadDesktop each helper</text>
+  <text x="582" y="602" font-size="10" fill="#334155">thread back to Default, so no</text>
+  <text x="582" y="616" font-size="10" fill="#334155">thread stays bound to the</text>
+  <text x="582" y="630" font-size="10" fill="#334155">desktop. A bound thread</text>
+  <text x="582" y="644" font-size="10" fill="#334155">alone keeps it alive.</text>
+
+  <!-- S4 -->
+  <rect x="813" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="827" y="566" font-size="12.5" font-weight="700" fill="#4527a0">4 · Release USER objects</text>
+  <text x="827" y="588" font-size="10" fill="#334155">Destroy the holder window</text>
+  <text x="827" y="602" font-size="10" fill="#334155">and uninstall LL hooks — the</text>
+  <text x="827" y="616" font-size="10" fill="#334155">last windows/hooks that</text>
+  <text x="827" y="630" font-size="10" fill="#334155">reference the desktop.</text>
+
+  <!-- S5 -->
+  <rect x="1058" y="540" width="220" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="1072" y="566" font-size="12.5" font-weight="700" fill="#c62828">5 · CloseDesktop</text>
+  <text x="1072" y="588" font-size="10" fill="#334155">Close the final HDESK handle.</text>
+  <text x="1072" y="602" font-size="10" fill="#334155">Closes one handle only; the</text>
+  <text x="1072" y="616" font-size="10" fill="#334155">object is freed only when the</text>
+  <text x="1072" y="630" font-size="10" fill="#334155">last handle closes AND no</text>
+  <text x="1072" y="644" font-size="10" fill="#334155">thread/window references</text>
+  <text x="1072" y="658" font-size="10" fill="#334155">remain.</text>
+
+  <!-- footnote / scope -->
+  <text x="50" y="748" font-size="10.5" fill="#475569">Scope: the desktop boundary isolates only USER objects — window handles, window messages, and hooks (per-desktop), plus journaling / global input. It does NOT isolate</text>
+  <text x="50" y="764" font-size="10.5" fill="#475569">files, registry, kernel objects, network, the process token, or process enumeration; the clipboard and global atoms are window-station-scoped, so two desktops under</text>
+  <text x="50" y="780" font-size="10.5" fill="#475569">WinSta0 share them. A hidden desktop is a UI-containment / input-routing primitive — not a security sandbox.</text>
+</svg>
