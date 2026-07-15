@@ -13,6 +13,15 @@ inline with ⚠.
 
 Diagrams are hand-authored SVG (in [`diagrams/`](diagrams/)).
 
+> **⚠ Scope note.** This document analyzes Win32 **desktop objects (`HDESK`)**.
+> For the goal of a **parallel, isolated input channel that a game actually
+> receives** (an AI on the host driving an app in a VM/VD, undisturbing the
+> user), desktop objects are the **wrong tool** — one session has a single
+> input desktop, so there is no parallel input stream, and games read below the
+> message queue. See [`PARALLEL-INPUT-FORWARDING.md`](PARALLEL-INPUT-FORWARDING.md)
+> for the correct design (separate session or VM + virtual HID). This document
+> is retained as the detailed desktop-object reference.
+
 ---
 
 ## 1. Purpose and scope

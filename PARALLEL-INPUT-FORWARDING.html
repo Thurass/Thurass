@@ -1,0 +1,785 @@
+<title>Parallel Isolated Input Forwarding — a bot in a sandbox</title>
+<style>
+  :root {
+    --bg: #f4f6fb; --surface: #ffffff; --surface-2: #f8fafc;
+    --ink: #0f172a; --muted: #475569; --faint: #64748b; --border: #e2e8f0;
+    --accent: #4338ca; --accent-soft: #eef0fe; --accent-ink: #3730a3;
+    --good: #2e7d32; --good-soft: #e8f5e9; --warn: #b45309; --warn-soft: #fff3e0;
+    --danger: #c62828; --danger-soft: #fdecec;
+    --code-bg: #f1f3f9; --code-ink: #3730a3;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", "Segoe UI Mono", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --measure: 68ch;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0e14; --surface: #12161f; --surface-2: #161b26;
+      --ink: #e6edf3; --muted: #9aa7b4; --faint: #7d8b99; --border: #263040;
+      --accent: #a5b4fc; --accent-soft: #1c2033; --accent-ink: #c7d2fe;
+      --good: #6ee7a8; --good-soft: #10261a; --warn: #fbbf77; --warn-soft: #2a2113;
+      --danger: #f6a5a5; --danger-soft: #2a1618;
+      --code-bg: #1a2030; --code-ink: #c7d2fe;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb; --surface: #ffffff; --surface-2: #f8fafc;
+    --ink: #0f172a; --muted: #475569; --faint: #64748b; --border: #e2e8f0;
+    --accent: #4338ca; --accent-soft: #eef0fe; --accent-ink: #3730a3;
+    --good: #2e7d32; --good-soft: #e8f5e9; --warn: #b45309; --warn-soft: #fff3e0;
+    --danger: #c62828; --danger-soft: #fdecec; --code-bg: #f1f3f9; --code-ink: #3730a3;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0e14; --surface: #12161f; --surface-2: #161b26;
+    --ink: #e6edf3; --muted: #9aa7b4; --faint: #7d8b99; --border: #263040;
+    --accent: #a5b4fc; --accent-soft: #1c2033; --accent-ink: #c7d2fe;
+    --good: #6ee7a8; --good-soft: #10261a; --warn: #fbbf77; --warn-soft: #2a2113;
+    --danger: #f6a5a5; --danger-soft: #2a1618; --code-bg: #1a2030; --code-ink: #c7d2fe;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  header.bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+  .bar-inner { display: flex; align-items: center; gap: 16px; height: 56px; }
+  .brand { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+  .brand .dot { color: var(--accent); }
+  .bar nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+  .bar nav a { font-family: var(--mono); font-size: 12px; color: var(--muted); text-decoration: none; padding: 6px 9px; border-radius: 7px; }
+  .bar nav a:hover { color: var(--accent); background: var(--accent-soft); }
+  .toggle { font-family: var(--mono); font-size: 12px; cursor: pointer; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; }
+  .toggle:hover { color: var(--accent); border-color: var(--accent); }
+  .toggle:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .hero { padding: 64px 0 40px; border-bottom: 1px solid var(--border); }
+  .kicker { font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.08; letter-spacing: -.02em; margin: 14px 0 0; text-wrap: balance; font-weight: 800; }
+  .lede { font-size: clamp(17px, 2.4vw, 20px); color: var(--muted); max-width: 64ch; margin: 20px 0 0; text-wrap: pretty; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .chip { display: inline-flex; align-items: baseline; gap: 8px; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px; box-shadow: var(--shadow); }
+  .chip b { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .verified { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; font-size: 13px; color: var(--good); font-family: var(--mono); background: var(--good-soft); border: 1px solid color-mix(in srgb, var(--good) 30%, transparent); padding: 6px 12px; border-radius: 8px; }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 68px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .sec-num { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 600; }
+  h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -.015em; margin: 0; text-wrap: balance; font-weight: 750; }
+  .prose { max-width: var(--measure); }
+  .prose p { margin: 16px 0; }
+  .prose p.sub { color: var(--muted); }
+  strong { font-weight: 680; }
+  code { font-family: var(--mono); font-size: .88em; background: var(--code-bg); color: var(--code-ink); padding: .12em .4em; border-radius: 5px; white-space: nowrap; }
+
+  figure { margin: 30px 0 6px; }
+  .figframe { background: #fbfdff; border: 1px solid var(--border); border-radius: 14px; padding: 14px; overflow-x: auto; box-shadow: var(--shadow); }
+  .figframe svg { display: block; width: 100%; height: auto; min-width: 680px; }
+  figcaption { font-size: 13.5px; color: var(--faint); margin-top: 12px; max-width: var(--measure); }
+  figcaption b { color: var(--muted); font-weight: 650; }
+
+  .note { max-width: var(--measure); margin: 20px 0; padding: 14px 16px 14px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); border-left: 4px solid var(--accent); font-size: 15px; }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note.danger { border-left-color: var(--danger); background: var(--danger-soft); }
+  .note.good { border-left-color: var(--good); background: var(--good-soft); }
+  .note .lbl { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+  .note.warn .lbl { color: var(--warn); } .note.danger .lbl { color: var(--danger); } .note.accent .lbl { color: var(--accent); } .note.good .lbl { color: var(--good); }
+
+  .rank { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 22px 0; max-width: var(--measure); font-family: var(--mono); font-size: 13px; }
+  .rank .r { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; background: var(--surface); }
+  .rank .r.lo { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, var(--border)); }
+  .rank .r.mid { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, var(--border)); }
+  .rank .r.hi { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--border)); }
+  .rank .lt { color: var(--faint); }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 24px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .card .topic { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+  .card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.55; }
+  .card .myth { color: var(--danger); font-weight: 600; }
+  .card .fix { color: var(--good); font-weight: 600; }
+
+  footer { padding: 44px 0 72px; color: var(--faint); font-size: 14px; }
+  footer .wrap { max-width: var(--measure); }
+  footer code { white-space: normal; }
+  a.inline { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+  a.inline:hover { border-bottom-color: var(--accent); }
+</style>
+
+<header class="bar">
+  <div class="wrap bar-inner">
+    <span class="brand">parallel<span class="dot">/</span>isolated&#8209;input</span>
+    <nav>
+      <a href="#arch">architecture</a>
+      <a href="#hdesk">why not HDESK</a>
+      <a href="#reach">reachability</a>
+      <a href="#mech">sandbox</a>
+      <a href="#loop">loop</a>
+      <a href="#verified">verified</a>
+    </nav>
+    <button class="toggle" id="themeToggle" aria-label="Toggle color theme">◐ theme</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="kicker">Win32 · virtualization · game-RL · design schematic</div>
+    <h1>A bot in a sandbox: parallel input a game actually receives</h1>
+    <p class="lede">An AI on your main desktop drives Minecraft running in a VM or a separate session — through a synthetic input channel, not the game's API. Your real keyboard and mouse stay yours; the two input streams never collide.</p>
+    <div class="chips">
+      <span class="chip"><b>isolate</b> separate session (VD) or VM guest</span>
+      <span class="chip"><b>inject</b> in-session SendInput · virtual HID device</span>
+      <span class="chip"><b>observe</b> pixels in — no application API</span>
+    </div>
+    <div class="verified">✓ reachability &amp; isolation claims cross-checked against vendor docs &amp; adversarially reviewed</div>
+  </div>
+
+  <section id="arch">
+    <div class="sec-head"><span class="sec-num">§1</span><h2>The two-sided architecture</h2></div>
+    <div class="prose">
+      <p>The real requirement is not "hidden vs visible" — it is a <strong>parallel, isolated input channel</strong> the user's own input never touches, feeding a game that reads hardware-level input. That splits the system across an isolation boundary.</p>
+      <p class="sub"><strong>Host (your main desktop):</strong> a <strong>process tracker</strong> that captures the sandbox's frames (pixels only, no app API) and an <strong>AI system</strong> that turns state into actions. <strong>Sandbox (VM guest or separate session):</strong> the <strong>target game</strong> and a <strong>process companion</strong> that injects real input. They close a loop: capture → decide → inject → render → capture.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 730" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="architecture__ah-blue" markerWidth="9" markerHeight="9" refX="7" refY="4.2" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4.2 L0,8.4 Z" fill="#1565c0"/>
+    </marker>
+    <marker id="architecture__ah-green" markerWidth="9" markerHeight="9" refX="7" refY="4.2" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4.2 L0,8.4 Z" fill="#2e7d32"/>
+    </marker>
+  </defs>
+
+  <rect x="4" y="4" width="992" height="722" rx="14" fill="#fbfdff" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="500" y="38" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Corrected system architecture — parallel isolated input loop</text>
+  <text x="500" y="60" text-anchor="middle" font-size="12.5" fill="#64748b">Observation and action form a closed loop across an isolation boundary — no game API, pixels in and synthetic input out.</text>
+
+  <!-- Region: HOST -->
+  <rect x="40" y="90" width="430" height="530" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="60" y="118" font-size="14.5" font-weight="700" fill="#1565c0">HOST — user's main desktop</text>
+  <text x="60" y="136" font-size="11.5" fill="#1565c0">user works normally, undisturbed</text>
+
+  <!-- Region: SANDBOX -->
+  <rect x="530" y="90" width="430" height="530" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="948" y="118" text-anchor="end" font-size="14.5" font-weight="700" fill="#4527a0">SANDBOX — VM guest / separate session (VD)</text>
+  <text x="948" y="136" text-anchor="end" font-size="11.5" fill="#4527a0">own input queue, RIT &amp; input desktop</text>
+
+  <!-- Host: user real input note -->
+  <rect x="70" y="152" width="370" height="44" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="255" y="171" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f172a">Real keyboard &amp; mouse — stay on host desktop</text>
+  <text x="255" y="187" text-anchor="middle" font-size="11" fill="#64748b">never routed into the sandbox (untouched)</text>
+
+  <!-- AI system box -->
+  <rect x="80" y="222" width="350" height="104" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="255" y="262" text-anchor="middle" font-size="14.5" font-weight="700" fill="#0f172a">AI system</text>
+  <text x="255" y="286" text-anchor="middle" font-size="12" fill="#0f172a">policy → actions</text>
+  <text x="255" y="306" text-anchor="middle" font-size="10.5" fill="#64748b">reasons on the observed frame</text>
+
+  <!-- Process tracker box -->
+  <rect x="80" y="466" width="350" height="112" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="255" y="500" text-anchor="middle" font-size="14.5" font-weight="700" fill="#0f172a">Process tracker</text>
+  <text x="255" y="522" text-anchor="middle" font-size="12" fill="#0f172a">screen / framebuffer capture</text>
+  <text x="255" y="542" text-anchor="middle" font-size="11.5" fill="#0f172a">pixels → state representation</text>
+  <text x="255" y="561" text-anchor="middle" font-size="10.5" fill="#c62828" font-weight="600">no application API</text>
+
+  <!-- Process companion box -->
+  <rect x="570" y="222" width="350" height="104" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="745" y="258" text-anchor="middle" font-size="14.5" font-weight="700" fill="#0f172a">Process companion</text>
+  <text x="745" y="280" text-anchor="middle" font-size="12" fill="#0f172a">input injector (in-sandbox)</text>
+  <text x="745" y="300" text-anchor="middle" font-size="10.5" fill="#64748b">SendInput / virtual HID device</text>
+
+  <!-- Target app box -->
+  <rect x="570" y="466" width="350" height="112" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="745" y="500" text-anchor="middle" font-size="14.5" font-weight="700" fill="#0f172a">Target app — e.g. Minecraft</text>
+  <text x="745" y="522" text-anchor="middle" font-size="12" fill="#0f172a">reads its own input stream</text>
+  <text x="745" y="542" text-anchor="middle" font-size="10.5" fill="#64748b">raw input · DirectInput · GetAsyncKeyState</text>
+  <text x="745" y="561" text-anchor="middle" font-size="10.5" fill="#2e7d32" font-weight="600">renders a new frame each tick</text>
+
+  <!-- Isolation boundary -->
+  <line x1="500" y1="96" x2="500" y2="614" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6 5"/>
+
+  <!-- ACTION / INPUT channel (blue) -->
+  <!-- A: AI -> companion (across, top) -->
+  <line x1="432" y1="274" x2="566" y2="274" stroke="#1565c0" stroke-width="2.6" marker-end="url(#architecture__ah-blue)"/>
+  <!-- B: companion -> app (down) -->
+  <line x1="745" y1="328" x2="745" y2="462" stroke="#1565c0" stroke-width="2.6" marker-end="url(#architecture__ah-blue)"/>
+
+  <!-- OBSERVATION channel (green) -->
+  <!-- C: app -> tracker (across, bottom) -->
+  <line x1="566" y1="524" x2="434" y2="524" stroke="#2e7d32" stroke-width="2.6" marker-end="url(#architecture__ah-green)"/>
+  <!-- D: tracker -> AI (up) -->
+  <line x1="255" y1="462" x2="255" y2="330" stroke="#2e7d32" stroke-width="2.6" marker-end="url(#architecture__ah-green)"/>
+
+  <!-- Edge label pills -->
+  <g font-size="11">
+    <!-- A -->
+    <rect x="438" y="255" width="124" height="22" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1"/>
+    <text x="500" y="270" text-anchor="middle" fill="#1565c0" font-weight="600">policy → actions</text>
+    <!-- B -->
+    <rect x="628" y="383" width="234" height="22" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1"/>
+    <text x="745" y="398" text-anchor="middle" fill="#1565c0" font-weight="600">virtual input → game (synthetic HID)</text>
+    <!-- C -->
+    <rect x="404" y="505" width="192" height="22" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1"/>
+    <text x="500" y="520" text-anchor="middle" fill="#2e7d32" font-weight="600">rendered frame → capture</text>
+    <!-- D -->
+    <rect x="196" y="383" width="118" height="22" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1"/>
+    <text x="255" y="398" text-anchor="middle" fill="#2e7d32" font-weight="600">pixels → state</text>
+  </g>
+
+  <!-- Channel captions -->
+  <text x="500" y="220" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1565c0" letter-spacing="0.5">ACTION / INPUT  ▸</text>
+  <text x="500" y="592" text-anchor="middle" font-size="10.5" font-weight="700" fill="#2e7d32" letter-spacing="0.5">◂  OBSERVATION</text>
+
+  <!-- Center annotation -->
+  <rect x="332" y="418" width="336" height="30" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.3"/>
+  <text x="500" y="437" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f172a">no application API — pixels in, synthetic input out</text>
+
+  <!-- Boundary bottom pill -->
+  <rect x="326" y="626" width="348" height="26" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="500" y="643" text-anchor="middle" font-size="11" font-weight="600" fill="#0f172a">isolation boundary — no shared input queue</text>
+
+  <!-- Legend + captions -->
+  <g font-size="11">
+    <line x1="60" y1="682" x2="92" y2="682" stroke="#1565c0" stroke-width="2.6" marker-end="url(#architecture__ah-blue)"/>
+    <text x="100" y="686" fill="#334155">ACTION: AI → companion → virtual input → game</text>
+    <line x1="60" y1="704" x2="92" y2="704" stroke="#2e7d32" stroke-width="2.6" marker-end="url(#architecture__ah-green)"/>
+    <text x="100" y="708" fill="#334155">OBSERVATION: game framebuffer / video → tracker</text>
+  </g>
+  <text x="948" y="686" text-anchor="end" font-size="11" font-weight="600" fill="#0f172a">Loop: capture → policy → inject → game → render → capture</text>
+  <text x="948" y="708" text-anchor="end" font-size="11" fill="#64748b">parallel &amp; isolated — the user's real keyboard/mouse are untouched</text>
+</svg></div>
+      <figcaption><b>Figure 1.</b> Observation and action cross the isolation boundary in opposite directions; the user's real keyboard/mouse are never routed into the sandbox.</figcaption>
+    </figure>
+  </section>
+
+  <section id="hdesk">
+    <div class="sec-head"><span class="sec-num">§2</span><h2>Why a Win32 desktop object is the wrong tool</h2></div>
+    <div class="prose">
+      <p>My first pass proposed a hidden Win32 desktop object (<code>HDESK</code>). It cannot meet this requirement, for two independent reasons.</p>
+      <p class="sub"><strong>No parallelism.</strong> One session has a single kernel Raw Input Thread and, at any instant, one "input desktop." Hardware input and <code>SendInput</code> route only there; <code>SwitchDesktop</code> is a mutually-exclusive full switch. Two desktops cannot carry two live input streams — they collide.</p>
+      <p class="sub"><strong>Games read below the message queue.</strong> A background desktop can only be fed by <code>PostMessage</code>, but games read Raw Input, DirectInput, and <code>GetAsyncKeyState</code> — all blind to posted messages. The requirement is met one level up: a separate <strong>session</strong> or a <strong>VM</strong>.</p>
+    </div>
+    <div class="note danger"><span class="lbl">Rejected</span> &nbsp;HDESK fails both hard requirements. It remains useful for message-driven line-of-business apps and as a window-message security boundary — neither of which is this problem. <a class="inline" href="VIRTUAL-DESKTOP-INPUT-FORWARDING.html">The full desktop-object analysis →</a></div>
+  </section>
+
+  <section id="reach">
+    <div class="sec-head"><span class="sec-num">§3</span><h2>What input a game actually receives</h2></div>
+    <div class="prose">
+      <p>Where an injection method enters the Windows input stack decides which read paths a game can observe. It is a strict ranking:</p>
+    </div>
+    <div class="rank">
+      <span class="r lo">PostMessage (window messages)</span>
+      <span class="lt">&lt;</span>
+      <span class="r mid">in-session SendInput</span>
+      <span class="lt">&lt;</span>
+      <span class="r hi">real / virtual HID device</span>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 616" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <rect x="2" y="2" width="976" height="612" rx="16" fill="#fbfdff" stroke="#e2e8f0"/>
+
+  <!-- Title -->
+  <text x="28" y="38" font-size="18" font-weight="700" fill="#0f172a">Input-reachability matrix — device/session input vs. app APIs</text>
+  <text x="28" y="60" font-size="12.5" fill="#64748b">Where each injection method enters the Windows input stack decides which read paths a game can actually observe.</text>
+
+  <!-- ===== Header row ===== -->
+  <!-- corner cell -->
+  <rect x="28" y="98" width="232" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="44" y="120" font-size="11" fill="#64748b">Injection method   &#8595;</text>
+  <text x="44" y="140" font-size="11" fill="#64748b">Game read path   &#8594;</text>
+
+  <!-- consumer column headers (app/target boxes) -->
+  <rect x="267" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="331" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Win32 msg</text>
+  <text x="331" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">queue</text>
+
+  <rect x="401" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="465" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Raw Input</text>
+  <text x="465" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">(WM_INPUT)</text>
+
+  <rect x="535" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="599" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">DirectInput</text>
+  <text x="599" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">(shared)</text>
+
+  <rect x="669" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="733" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">DirectInput</text>
+  <text x="733" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">(exclusive)</text>
+
+  <rect x="803" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="867" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">GetAsync-</text>
+  <text x="867" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">KeyState</text>
+
+  <!-- ===== ROW 1 : Window message ===== -->
+  <rect x="28" y="167" width="232" height="82" rx="6" fill="#fff3e0" stroke="#e65100"/>
+  <text x="44" y="200" font-size="13.5" font-weight="700" fill="#0f172a">Window message</text>
+  <text x="44" y="220" font-size="11" fill="#9a3412">PostMessage(WM_KEYDOWN&#8230;)</text>
+  <text x="44" y="237" font-size="11" fill="#9a3412">&#8594; one window's queue only</text>
+
+  <!-- r1 cells -->
+  <rect x="267" y="167" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="331" cy="203" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 324 203 L 329 209 L 339 196" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="331" y="235" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="401" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="465" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="459" y1="197" x2="471" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="459" y1="209" x2="471" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="465" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <rect x="535" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="599" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="593" y1="197" x2="605" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="593" y1="209" x2="605" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="599" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <rect x="669" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="733" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="727" y1="197" x2="739" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="727" y1="209" x2="739" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="733" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <rect x="803" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="867" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="861" y1="197" x2="873" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="861" y1="209" x2="873" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="867" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <!-- ===== ROW 2 : SendInput ===== -->
+  <rect x="28" y="255" width="232" height="82" rx="6" fill="#fff3e0" stroke="#e65100"/>
+  <text x="44" y="288" font-size="13.5" font-weight="700" fill="#0f172a">In-session SendInput</text>
+  <text x="44" y="308" font-size="11" fill="#9a3412">keybd_event / mouse_event</text>
+  <text x="44" y="325" font-size="11" fill="#9a3412">&#8594; RIT-level, same session</text>
+
+  <rect x="267" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="331" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 324 291 L 329 297 L 339 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="331" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="401" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="465" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 458 291 L 463 297 L 473 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="465" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches *</text>
+
+  <rect x="535" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="599" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 592 291 L 597 297 L 607 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="599" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="669" y="255" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="733" cy="291" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="727" y1="285" x2="739" y2="297" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="727" y1="297" x2="739" y2="285" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="733" y="323" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">bypassed</text>
+
+  <rect x="803" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="867" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 860 291 L 865 297 L 875 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="867" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <!-- ===== ROW 3 : Virtual HID ===== -->
+  <rect x="28" y="343" width="232" height="82" rx="6" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="44" y="376" font-size="13.5" font-weight="700" fill="#0f172a">Virtual HID device</text>
+  <text x="44" y="396" font-size="11" fill="#1b5e20">hypervisor scancode / kernel HID</text>
+  <text x="44" y="413" font-size="11" fill="#1b5e20">&#8594; below the marker, as hardware</text>
+
+  <rect x="267" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="331" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 324 379 L 329 385 L 339 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="331" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="401" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="465" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 458 379 L 463 385 L 473 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="465" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="535" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="599" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 592 379 L 597 385 L 607 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="599" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="669" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="733" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 726 379 L 731 385 L 741 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="733" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="803" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="867" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 860 379 L 865 385 L 875 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="867" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <!-- reachability ladder note (left, under method column) -->
+  <text x="28" y="448" font-size="11" fill="#64748b">Reachability climbs down the stack:  PostMessage  &#60;  in-session SendInput  &#60;  real / virtual-HID device.</text>
+
+  <!-- ===== Caption ===== -->
+  <rect x="28" y="460" width="924" height="56" rx="8" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="48" y="484" font-size="13" font-weight="700" fill="#14532d">A game that reads Raw Input / exclusive DirectInput needs real (or virtual-HID) device input —</text>
+  <text x="48" y="504" font-size="13" font-weight="700" fill="#14532d">not window messages, not the app's API.</text>
+
+  <!-- footnote -->
+  <text x="28" y="540" font-size="10.5" fill="#64748b">* SendInput does surface in WM_INPUT, but injected events are flagged (LLKHF_INJECTED, RAWINPUTHEADER.hDevice = 0) and relative-mouse deltas are unreliable,</text>
+  <text x="28" y="556" font-size="10.5" fill="#64748b">so Raw Input / anti-cheat can distinguish and reject it. Exclusive-mode DirectInput reads device state directly and ignores the message queue entirely.</text>
+  <text x="28" y="572" font-size="10.5" fill="#64748b">A real or virtual HID device enters at the device / RIT layer below the injected marker, so it is indistinguishable from hardware to every read path.</text>
+</svg></div>
+      <figcaption><b>Figure 2.</b> <code>SendInput</code> does reach Raw Input — but flagged (<code>LLKHF_INJECTED</code>, <code>hDevice==NULL</code>), and it cannot produce the relative mouse deltas raw look-motion needs. Only a device-level HID is indistinguishable from hardware.</figcaption>
+    </figure>
+    <div class="note warn"><span class="lbl">Minecraft specifics</span> &nbsp;Java Minecraft's keyboard/menus are driven fine by in-session <code>SendInput</code>. But its default <em>Raw Input ON</em> look-motion arrives as <code>WM_INPUT</code> relative deltas that <code>SendInput</code> can't correctly produce — so in-game aiming needs a <strong>virtual/kernel HID</strong> (or toggling Raw Input off for the cursor-warp fallback).</div>
+  </section>
+
+  <section id="mech">
+    <div class="sec-head"><span class="sec-num">§4</span><h2>Which sandbox boundary</h2></div>
+    <div class="prose">
+      <p>Four candidate boundaries, scored against the two hard requirements — parallel input, and input the game actually reads.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 790" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <rect x="0" y="0" width="1160" height="790" rx="16" fill="#fbfdff"/>
+
+  <!-- Title -->
+  <text x="24" y="40" font-size="18" font-weight="700" fill="#0f172a">Which sandbox boundary delivers parallel, isolated, game-compatible input?</text>
+  <text x="24" y="62" font-size="12.5" fill="#64748b">Four input-isolation mechanisms scored against the two hard requirements — parallel input and input the game actually reads (Raw Input / DirectInput).</text>
+
+  <!-- Column background tints (span rows) -->
+  <rect x="264" y="92" width="218" height="592" fill="#fff5f6"/>
+  <rect x="482" y="92" width="218" height="592" fill="#f4f9ff"/>
+  <rect x="700" y="92" width="218" height="592" fill="#f7f4fc"/>
+  <rect x="918" y="92" width="218" height="592" fill="#f4faf5"/>
+
+  <!-- ===================== HEADERS ===================== -->
+  <!-- col1 HDESK (rejected) -->
+  <rect x="264" y="92" width="218" height="100" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="373" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">HDESK desktop object</text>
+  <text x="373" y="136" font-size="10.5" fill="#7f1d1d" text-anchor="middle">One input desktop per session;</text>
+  <text x="373" y="150" font-size="10.5" fill="#7f1d1d" text-anchor="middle">background = message-only</text>
+  <rect x="313" y="162" width="120" height="22" rx="11" fill="#c62828"/>
+  <text x="373" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">REJECTED</text>
+
+  <!-- col2 Separate session / VD -->
+  <rect x="482" y="92" width="218" height="100" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="591" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">Separate session / VD</text>
+  <text x="591" y="136" font-size="10.5" fill="#0d3c6e" text-anchor="middle">Own input desktop, queue &amp;</text>
+  <text x="591" y="150" font-size="10.5" fill="#0d3c6e" text-anchor="middle">logical HID per session</text>
+  <rect x="516" y="162" width="150" height="22" rx="11" fill="#1565c0"/>
+  <text x="591" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">VIABLE · LIGHTER</text>
+
+  <!-- col3 Virtual machine -->
+  <rect x="700" y="92" width="218" height="100" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="809" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">Virtual machine</text>
+  <text x="809" y="136" font-size="10.5" fill="#311b6e" text-anchor="middle">Guest OS + virtual HID =</text>
+  <text x="809" y="150" font-size="10.5" fill="#311b6e" text-anchor="middle">real hardware to the guest</text>
+  <rect x="749" y="162" width="120" height="22" rx="11" fill="#4527a0"/>
+  <text x="809" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">BEST FIT</text>
+
+  <!-- col4 Virtual HID driver -->
+  <rect x="918" y="92" width="218" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="1027" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">Virtual HID driver</text>
+  <text x="1027" y="136" font-size="10.5" fill="#14532d" text-anchor="middle">Device-level injection;</text>
+  <text x="1027" y="150" font-size="10.5" fill="#14532d" text-anchor="middle">below the software marker</text>
+  <rect x="967" y="162" width="120" height="22" rx="11" fill="#2e7d32"/>
+  <text x="1027" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">HARD CASES</text>
+
+  <!-- Row axis label header -->
+  <text x="40" y="150" font-size="12" font-weight="700" fill="#64748b">CRITERION</text>
+
+  <!-- ===================== ROW GRID LINES ===================== -->
+  <line x1="24" y1="200" x2="1136" y2="200" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="24" y1="321" x2="1136" y2="321" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="24" y1="442" x2="1136" y2="442" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="24" y1="563" x2="1136" y2="563" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="24" y1="684" x2="1136" y2="684" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="264" y1="92" x2="264" y2="684" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- ===================== ROW 1: Parallel input stream? ===================== -->
+  <text x="40" y="255" font-size="12.5" font-weight="700" fill="#0f172a">Parallel input</text>
+  <text x="40" y="272" font-size="12.5" font-weight="700" fill="#0f172a">stream?</text>
+
+  <!-- HDESK: cross -->
+  <circle cx="373" cy="232" r="13" fill="#ffebee" stroke="#c62828" stroke-width="1.6"/>
+  <path d="M368,227 L378,237 M378,227 L368,237" stroke="#c62828" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="373" y="264" font-size="10" fill="#7f1d1d" text-anchor="middle">One input desktop per</text>
+  <text x="373" y="278" font-size="10" fill="#7f1d1d" text-anchor="middle">session — streams collide</text>
+  <!-- Session: check -->
+  <circle cx="591" cy="232" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M585,232 L590,238 L598,227" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="591" y="264" font-size="10" fill="#334155" text-anchor="middle">Own input desktop + queue,</text>
+  <text x="591" y="278" font-size="10" fill="#334155" text-anchor="middle">genuinely concurrent</text>
+  <!-- VM: check -->
+  <circle cx="809" cy="232" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M803,232 L808,238 L816,227" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="809" y="264" font-size="10" fill="#334155" text-anchor="middle">Separate guest input stack —</text>
+  <text x="809" y="278" font-size="10" fill="#334155" text-anchor="middle">zero cross-talk</text>
+  <!-- HID: check -->
+  <circle cx="1027" cy="232" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M1021,232 L1026,238 L1034,227" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1027" y="264" font-size="10" fill="#334155" text-anchor="middle">Device-level stream,</text>
+  <text x="1027" y="278" font-size="10" fill="#334155" text-anchor="middle">independent of host</text>
+
+  <!-- ===================== ROW 2: User undisturbed / isolated? ===================== -->
+  <text x="40" y="376" font-size="12.5" font-weight="700" fill="#0f172a">User undisturbed</text>
+  <text x="40" y="393" font-size="12.5" font-weight="700" fill="#0f172a">/ isolated?</text>
+
+  <!-- HDESK: cross -->
+  <circle cx="373" cy="353" r="13" fill="#ffebee" stroke="#c62828" stroke-width="1.6"/>
+  <path d="M368,348 L378,358 M378,348 L368,358" stroke="#c62828" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="373" y="385" font-size="10" fill="#7f1d1d" text-anchor="middle">Contends for the single</text>
+  <text x="373" y="399" font-size="10" fill="#7f1d1d" text-anchor="middle">input desktop — not isolated</text>
+  <!-- Session: warn -->
+  <circle cx="591" cy="353" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M591,347 L591,355" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="591" cy="359.5" r="1.5" fill="#b26a00"/>
+  <text x="591" y="385" font-size="10" fill="#334155" text-anchor="middle">Isolated input, but shares</text>
+  <text x="591" y="399" font-size="10" fill="#334155" text-anchor="middle">OS kernel, drivers &amp; FS</text>
+  <!-- VM: check -->
+  <circle cx="809" cy="353" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M803,353 L808,359 L816,348" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="809" y="385" font-size="10" fill="#334155" text-anchor="middle">Separate guest OS —</text>
+  <text x="809" y="399" font-size="10" fill="#334155" text-anchor="middle">strongest isolation</text>
+  <!-- HID: check -->
+  <circle cx="1027" cy="353" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M1021,353 L1026,359 L1034,348" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1027" y="385" font-size="10" fill="#334155" text-anchor="middle">Injects below host layer;</text>
+  <text x="1027" y="399" font-size="10" fill="#334155" text-anchor="middle">host input untouched</text>
+
+  <!-- ===================== ROW 3: Game sees it? ===================== -->
+  <text x="40" y="497" font-size="12.5" font-weight="700" fill="#0f172a">Game sees it?</text>
+  <text x="40" y="514" font-size="11" fill="#64748b">(Raw Input / DirectInput)</text>
+
+  <!-- HDESK: cross -->
+  <circle cx="373" cy="474" r="13" fill="#ffebee" stroke="#c62828" stroke-width="1.6"/>
+  <path d="M368,469 L378,479 M378,469 L368,479" stroke="#c62828" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="373" y="506" font-size="10" fill="#7f1d1d" text-anchor="middle">Only PostMessage reaches it;</text>
+  <text x="373" y="520" font-size="10" fill="#7f1d1d" text-anchor="middle">games read below the queue</text>
+  <!-- Session: check -->
+  <circle cx="591" cy="474" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M585,474 L590,480 L598,469" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="591" y="506" font-size="10" fill="#334155" text-anchor="middle">In-session SendInput feeds</text>
+  <text x="591" y="520" font-size="10" fill="#334155" text-anchor="middle">messages + async key state</text>
+  <!-- VM: check -->
+  <circle cx="809" cy="474" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M803,474 L808,480 L816,469" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="809" y="506" font-size="10" fill="#334155" text-anchor="middle">Virtual HID = real hardware;</text>
+  <text x="809" y="520" font-size="10" fill="#334155" text-anchor="middle">reaches exclusive DirectInput</text>
+  <!-- HID: check -->
+  <circle cx="1027" cy="474" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M1021,474 L1026,480 L1034,469" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1027" y="506" font-size="10" fill="#334155" text-anchor="middle">Genuine device reports —</text>
+  <text x="1027" y="520" font-size="10" fill="#334155" text-anchor="middle">for exclusive-DI hard cases</text>
+
+  <!-- ===================== ROW 4: Cost ===================== -->
+  <text x="40" y="618" font-size="12.5" font-weight="700" fill="#0f172a">Cost</text>
+  <text x="40" y="635" font-size="11" fill="#64748b">(driver / hypervisor /</text>
+  <text x="40" y="649" font-size="11" fill="#64748b">session juggling)</text>
+
+  <!-- HDESK: warn (cheap but useless) -->
+  <circle cx="373" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M373,589 L373,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="373" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="373" y="627" font-size="10" fill="#7f1d1d" text-anchor="middle">Cheap — but delivers</text>
+  <text x="373" y="641" font-size="10" fill="#7f1d1d" text-anchor="middle">neither requirement</text>
+  <!-- Session: warn -->
+  <circle cx="591" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M591,589 L591,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="591" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="591" y="627" font-size="10" fill="#334155" text-anchor="middle">Client single-console limit;</text>
+  <text x="591" y="641" font-size="10" fill="#334155" text-anchor="middle">session juggling / RDPWrap</text>
+  <!-- VM: warn -->
+  <circle cx="809" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M809,589 L809,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="809" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="809" y="627" font-size="10" fill="#334155" text-anchor="middle">Hypervisor + guest OS +</text>
+  <text x="809" y="641" font-size="10" fill="#334155" text-anchor="middle">GPU passthrough weight</text>
+  <!-- HID: warn -->
+  <circle cx="1027" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M1027,589 L1027,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="1027" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="1027" y="627" font-size="10" fill="#334155" text-anchor="middle">Signed kernel driver;</text>
+  <text x="1027" y="641" font-size="10" fill="#334155" text-anchor="middle">maintenance risk</text>
+
+  <!-- ===================== LEGEND ===================== -->
+  <g transform="translate(24,700)">
+    <circle cx="10" cy="9" r="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+    <path d="M5.5,9 L9,12.5 L14,5.5" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="24" y="13" font-size="10.5" fill="#334155">meets requirement</text>
+    <circle cx="176" cy="9" r="8" fill="#fff8e1" stroke="#f9a825" stroke-width="1.4"/>
+    <path d="M176,4 L176,10" stroke="#b26a00" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="176" cy="13.5" r="1.3" fill="#b26a00"/>
+    <text x="190" y="13" font-size="10.5" fill="#334155">works, with caveats / cost</text>
+    <circle cx="372" cy="9" r="8" fill="#ffebee" stroke="#c62828" stroke-width="1.4"/>
+    <path d="M368,5 L376,13 M376,5 L368,13" stroke="#c62828" stroke-width="2" stroke-linecap="round"/>
+    <text x="386" y="13" font-size="10.5" fill="#334155">fails requirement</text>
+  </g>
+
+  <!-- ===================== VERDICT STRIP ===================== -->
+  <rect x="24" y="730" width="1112" height="46" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="40" y="750" font-size="11" fill="#0f172a"><tspan font-weight="700">Verdict:</tspan> HDESK is rejected — a background desktop takes only PostMessage, and games poll Raw Input / DirectInput / GetAsyncKeyState below the message queue.</text>
+  <text x="40" y="766" font-size="11" fill="#0f172a">A separate session / VD is the lighter-weight fit; a VM (host-side or with an in-guest virtual HID) gives the strongest isolation and reaches even exclusive DirectInput.</text>
+</svg></div>
+      <figcaption><b>Figure 3.</b> HDESK rejected; a separate session (VD) is the lighter fit; a VM gives the strongest isolation and, with a device-level HID, reaches even exclusive DirectInput; a virtual-HID driver covers the hardest cases.</figcaption>
+    </figure>
+    <div class="note accent"><span class="lbl">Trade-off</span> &nbsp;A <strong>separate session</strong> is lighter but bounded by client-Windows' single-console limit and disconnected-session render/lock problems. A <strong>VM</strong> is heavier (guest OS, GPU, capture/encode latency) but gives a clean, separate device stack — the most robust path.</div>
+  </section>
+
+  <section id="loop">
+    <div class="sec-head"><span class="sec-num">§5</span><h2>The closed loop &amp; its latency</h2></div>
+    <div class="prose">
+      <p>Everything is a soft-real-time loop with <strong>no in-band acknowledgement</strong> — the only feedback that an action registered is the next captured frame. The action lands <em>k</em> frames later, stale by the loop latency, which the policy must model (action-repeat / latency-aware training).</p>
+      <p class="sub">The dominant cost is <strong>GPU→CPU readback and cross-isolation transfer</strong>, plus policy inference — not the input injection. A small CNN fits a 60&nbsp;fps budget; a large VLM does not and forces frame-skip.</p>
+    </div>
+    <figure>
+      <div class="figframe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 815" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="loop__aGreen" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#2e7d32"/></marker>
+    <marker id="loop__aSlate" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#64748b"/></marker>
+    <marker id="loop__aOrange" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#e65100"/></marker>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="815" rx="14" fill="#fbfdff"/>
+
+  <!-- Title -->
+  <text x="40" y="42" font-size="18" font-weight="700" fill="#0f172a">Closed control loop &amp; latency budget</text>
+  <text x="40" y="66" font-size="12.5" fill="#64748b">Computer-use / game-RL loop — pixels in, synthetic input out. No application API anywhere; the only feedback is the next captured frame.</text>
+
+  <!-- Regions -->
+  <rect x="60" y="150" width="440" height="560" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="80" y="180" font-size="12.5" font-weight="700" fill="#1565c0">HOST — AI system  (no game API in the loop)</text>
+
+  <rect x="740" y="150" width="440" height="560" rx="10" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="760" y="180" font-size="12.5" font-weight="700" fill="#4527a0">SANDBOX — VM guest / separate session (own input queue + RIT)</text>
+
+  <!-- isolation boundary hint -->
+  <line x1="620" y1="198" x2="620" y2="300" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="620" y1="565" x2="620" y2="700" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <!-- ============ HOST BOXES ============ -->
+  <!-- 3 AI policy (top-left) -->
+  <rect x="90" y="210" width="380" height="120" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.6"/>
+  <circle cx="114" cy="234" r="15" fill="#e65100"/><text x="114" y="239" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="140" y="240" font-size="15" font-weight="700" fill="#0f172a">AI policy: state &#8594; action</text>
+  <text x="140" y="258" font-size="11.5" fill="#64748b">learned policy — reactive control</text>
+  <rect x="102" y="272" width="356" height="46" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="114" y="290" font-size="11" fill="#0f172a">small CNN &lt; 5 ms  &#10003;  fits the 60 fps budget</text>
+  <text x="114" y="308" font-size="11" fill="#c62828">large VLM 100s ms  &#10007;  &#8594; frame-skip / lower action rate</text>
+  <rect x="356" y="215" width="106" height="21" rx="6" fill="#ffebee" stroke="#c62828"/><text x="409" y="230" font-size="10" font-weight="700" fill="#c62828" text-anchor="middle">DOMINATES</text>
+
+  <!-- 2 Tracker (bottom-left) -->
+  <rect x="90" y="520" width="380" height="120" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.6"/>
+  <circle cx="114" cy="544" r="15" fill="#e65100"/><text x="114" y="549" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="140" y="550" font-size="15" font-weight="700" fill="#0f172a">Tracker: pixels &#8594; state</text>
+  <text x="140" y="568" font-size="11.5" fill="#64748b">CV / small model — no game API</text>
+  <rect x="102" y="582" width="356" height="46" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="114" y="600" font-size="11" fill="#0f172a">learned CNN encoder ~1&#8211;5 ms  (robust)</text>
+  <text x="114" y="618" font-size="11" fill="#64748b">classic CV cheaper, brittle to DPI / HUD-scale / theme</text>
+
+  <!-- ============ SANDBOX BOXES ============ -->
+  <!-- 5 Companion injects (top-right) -->
+  <rect x="770" y="200" width="380" height="110" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <circle cx="794" cy="224" r="15" fill="#2e7d32"/><text x="794" y="229" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+  <text x="820" y="230" font-size="15" font-weight="700" fill="#0f172a">Companion injects (virtual input)</text>
+  <text x="820" y="248" font-size="11.5" fill="#64748b">in-sandbox — SendInput / virtual HID (device level)</text>
+  <rect x="782" y="262" width="356" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="794" y="284" font-size="11" fill="#0f172a">in-guest injection &lt; 1 ms · relative mouse-look via HID</text>
+
+  <!-- 6 Game (mid-right) -->
+  <rect x="770" y="380" width="380" height="110" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.6"/>
+  <circle cx="794" cy="404" r="15" fill="#64748b"/><text x="794" y="409" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+  <text x="820" y="410" font-size="15" font-weight="700" fill="#0f172a">Game processes + renders next frame</text>
+  <text x="820" y="428" font-size="11.5" fill="#64748b">free-running, un-pausable world</text>
+  <rect x="782" y="442" width="356" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="794" y="464" font-size="11" fill="#0f172a">frame time ~16.7 ms @ 60 fps  =  the reaction budget</text>
+
+  <!-- 1 Capture (bottom-right) -->
+  <rect x="770" y="545" width="380" height="110" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.6"/>
+  <circle cx="794" cy="569" r="15" fill="#e65100"/><text x="794" y="574" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="820" y="575" font-size="15" font-weight="700" fill="#0f172a">Capture frame</text>
+  <text x="820" y="593" font-size="11.5" fill="#64748b">sandbox framebuffer · WGC / DXGI Desktop Duplication</text>
+  <rect x="782" y="607" width="356" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="794" y="629" font-size="11" fill="#0f172a">on-GPU ~1&#8211;3 ms  +  GPU&#8594;CPU readback ~several ms</text>
+  <rect x="1034" y="549" width="106" height="21" rx="6" fill="#ffebee" stroke="#c62828"/><text x="1087" y="564" font-size="10" font-weight="700" fill="#c62828" text-anchor="middle">DOMINATES</text>
+
+  <!-- 4 Input channel (top crossing) -->
+  <rect x="546" y="230" width="148" height="74" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <text x="620" y="256" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">4 · Input channel</text>
+  <text x="620" y="273" font-size="11" fill="#64748b" text-anchor="middle">host &#8594; sandbox</text>
+  <text x="620" y="288" font-size="10.5" fill="#2e7d32" text-anchor="middle">vsock / shared-mem &lt; 1 ms</text>
+
+  <!-- center note -->
+  <rect x="536" y="345" width="168" height="30" rx="15" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="620" y="364" font-size="11" font-weight="700" fill="#2e7d32" text-anchor="middle">no application API in loop</text>
+
+  <!-- ============ ARROWS ============ -->
+  <!-- 6 -> 1  render (down, right col) -->
+  <line x1="960" y1="490" x2="960" y2="543" stroke="#64748b" stroke-width="2.2" marker-end="url(#loop__aSlate)"/>
+  <rect x="915" y="505" width="90" height="24" rx="12" fill="#ffffff" stroke="#64748b"/><text x="960" y="521" font-size="11" fill="#0f172a" text-anchor="middle">render</text>
+
+  <!-- 5 -> 6  action injected (down) -->
+  <line x1="960" y1="310" x2="960" y2="378" stroke="#64748b" stroke-width="2.2" marker-end="url(#loop__aSlate)"/>
+  <rect x="912" y="333" width="96" height="24" rx="12" fill="#ffffff" stroke="#64748b"/><text x="960" y="349" font-size="11" fill="#0f172a" text-anchor="middle">injected</text>
+
+  <!-- 1 -> 2 observation crossing (left) -->
+  <line x1="770" y1="598" x2="474" y2="586" stroke="#2e7d32" stroke-width="2.4" marker-end="url(#loop__aGreen)"/>
+  <text x="620" y="568" font-size="9" font-style="italic" fill="#64748b" text-anchor="middle">crosses isolation boundary</text>
+  <rect x="518" y="572" width="204" height="42" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+  <text x="620" y="588" font-size="11" font-weight="700" fill="#0f172a" text-anchor="middle">observation: frame pixels</text>
+  <text x="620" y="604" font-size="10" fill="#64748b" text-anchor="middle">zero-copy &#8776;0 · encoded guest&#8594;host +10&#8211;30 ms</text>
+
+  <!-- 2 -> 3 state (up, left col) -->
+  <line x1="250" y1="520" x2="250" y2="332" stroke="#e65100" stroke-width="2.2" marker-end="url(#loop__aOrange)"/>
+  <rect x="205" y="412" width="90" height="24" rx="12" fill="#ffffff" stroke="#e65100"/><text x="250" y="428" font-size="11" fill="#0f172a" text-anchor="middle">state</text>
+
+  <!-- 3 -> 4 -> 5 action crossing -->
+  <line x1="470" y1="268" x2="544" y2="267" stroke="#2e7d32" stroke-width="2.4" marker-end="url(#loop__aGreen)"/>
+  <line x1="694" y1="267" x2="768" y2="256" stroke="#2e7d32" stroke-width="2.4" marker-end="url(#loop__aGreen)"/>
+  <text x="620" y="222" font-size="9" font-style="italic" fill="#64748b" text-anchor="middle">crosses isolation boundary</text>
+
+  <!-- ============ BOTTOM BANNER ============ -->
+  <rect x="60" y="726" width="1120" height="74" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="80" y="752" font-size="13" font-weight="700" fill="#0f172a">&#931; end-to-end latency must fit the game's reaction budget &#8776; 16.7 ms / action (60 fps reactive) — small CNN fits; large VLM does not.</text>
+  <text x="80" y="772" font-size="11.5" fill="#64748b">Dominated by GPU&#8594;CPU readback + guest&#8594;host transfer and policy inference, NOT by input injection.</text>
+  <text x="80" y="790" font-size="11.5" fill="#64748b">One-way input, no ACK: observation is stale by the loop latency, so the action lands k frames later (off-by-k) &#8594; action-repeat / latency-aware training.</text>
+</svg></div>
+      <figcaption><b>Figure 4.</b> capture → tracker → AI → input channel → companion inject → game render → capture. No application API appears anywhere in the loop.</figcaption>
+    </figure>
+  </section>
+
+  <section id="verified">
+    <div class="sec-head"><span class="sec-num">§6</span><h2>Corrections the verification pass caught</h2></div>
+    <div class="prose"><p class="sub">Adversarial fact-checking against vendor docs sharpened several load-bearing details.</p></div>
+    <div class="grid">
+      <div class="card"><div class="topic">SendInput vs Raw Input</div><p><span class="myth">SendInput does surface in WM_INPUT — but flagged.</span> <code>hDevice==NULL</code>, <code>IMO_INJECTED</code>, and relative deltas are unreliable, so raw-input look-motion <span class="fix">needs a real/virtual HID.</span></p></div>
+      <div class="card"><div class="topic">exclusive DirectInput isn't the bypass</div><p>Modern DirectInput rides on Raw Input, so it <span class="fix">does see in-session SendInput.</span> <span class="myth">PostMessage is ineffective against DirectInput at all cooperative levels</span> — the true bypass is a kernel/HID-direct read.</p></div>
+      <div class="card"><div class="topic">GetKeyState ≠ GetAsyncKeyState</div><p>Two distinct tables. <span class="fix">SendInput moves both; PostMessage moves neither.</span> A game polling <code>GetAsyncKeyState</code> is unreachable by window messages.</p></div>
+      <div class="card"><div class="topic">SendInput scope</div><p>Bound to the caller's session/desktop and UIPI — <span class="myth">it cannot cross a session, a desktop object, or a VM guest.</span> The injector must live <span class="fix">inside the sandbox.</span></p></div>
+      <div class="card"><div class="topic">separate-session friction</div><p>Client Windows allows <span class="myth">one active console session</span>; a disconnected RDP session locks and stops rendering (black capture) unless you redirect with <code>tscon</code> + a virtual display + RDS GPU policy.</p></div>
+      <div class="card"><div class="topic">VM virtual-HID limits</div><p>Device-level input reaches everything, but <span class="myth">absolute-coordinate mice break relative mouselook</span>, the device is still fingerprintable, and VirtualBox has <span class="myth">no VBoxManage mouse CLI</span> (mouse goes through <code>IMouse</code> COM).</p></div>
+      <div class="card"><div class="topic">capture is isolation-bound</div><p>DXGI Desktop Duplication is session-scoped and can't reach across from the host; <span class="fix">a VM needs an in-guest capturer</span> (Hyper-V has no low-latency host framebuffer API).</p></div>
+      <div class="card"><div class="topic">no ACK — off-by-k</div><p>Input is one-way; the only feedback is the next frame. <span class="fix">Frame pacing must be event-driven and de-duplicated</span>, and the policy must model the delay — not assume synchronous step semantics.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Visual companion to the full design-only schematic — <code>PARALLEL-INPUT-FORWARDING.md</code> — which carries the mechanism trade-offs, capture options, isolation guarantees, latency/failure analysis, and the explicit non-goals. The earlier Win32 desktop-object study lives in <code>VIRTUAL-DESKTOP-INPUT-FORWARDING.md</code>.</p>
+    <p style="margin-top:14px; color:var(--faint)"><span style="font-family:var(--mono)">design-only</span> · no shipped code · no application APIs — pixels in, synthetic input out · scoped to local / single-player / self-hosted RL.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeToggle');
+    function current() { var s = root.getAttribute('data-theme'); return s || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      btn.textContent = next === 'dark' ? '☀ light' : '☾ dark';
+    });
+  })();
+</script>

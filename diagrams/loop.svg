@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 815" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="aGreen" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#2e7d32"/></marker>
+    <marker id="aSlate" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#64748b"/></marker>
+    <marker id="aOrange" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#e65100"/></marker>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="815" rx="14" fill="#fbfdff"/>
+
+  <!-- Title -->
+  <text x="40" y="42" font-size="18" font-weight="700" fill="#0f172a">Closed control loop &amp; latency budget</text>
+  <text x="40" y="66" font-size="12.5" fill="#64748b">Computer-use / game-RL loop — pixels in, synthetic input out. No application API anywhere; the only feedback is the next captured frame.</text>
+
+  <!-- Regions -->
+  <rect x="60" y="150" width="440" height="560" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="80" y="180" font-size="12.5" font-weight="700" fill="#1565c0">HOST — AI system  (no game API in the loop)</text>
+
+  <rect x="740" y="150" width="440" height="560" rx="10" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="760" y="180" font-size="12.5" font-weight="700" fill="#4527a0">SANDBOX — VM guest / separate session (own input queue + RIT)</text>
+
+  <!-- isolation boundary hint -->
+  <line x1="620" y1="198" x2="620" y2="300" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="620" y1="565" x2="620" y2="700" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <!-- ============ HOST BOXES ============ -->
+  <!-- 3 AI policy (top-left) -->
+  <rect x="90" y="210" width="380" height="120" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.6"/>
+  <circle cx="114" cy="234" r="15" fill="#e65100"/><text x="114" y="239" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="140" y="240" font-size="15" font-weight="700" fill="#0f172a">AI policy: state &#8594; action</text>
+  <text x="140" y="258" font-size="11.5" fill="#64748b">learned policy — reactive control</text>
+  <rect x="102" y="272" width="356" height="46" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="114" y="290" font-size="11" fill="#0f172a">small CNN &lt; 5 ms  &#10003;  fits the 60 fps budget</text>
+  <text x="114" y="308" font-size="11" fill="#c62828">large VLM 100s ms  &#10007;  &#8594; frame-skip / lower action rate</text>
+  <rect x="356" y="215" width="106" height="21" rx="6" fill="#ffebee" stroke="#c62828"/><text x="409" y="230" font-size="10" font-weight="700" fill="#c62828" text-anchor="middle">DOMINATES</text>
+
+  <!-- 2 Tracker (bottom-left) -->
+  <rect x="90" y="520" width="380" height="120" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.6"/>
+  <circle cx="114" cy="544" r="15" fill="#e65100"/><text x="114" y="549" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="140" y="550" font-size="15" font-weight="700" fill="#0f172a">Tracker: pixels &#8594; state</text>
+  <text x="140" y="568" font-size="11.5" fill="#64748b">CV / small model — no game API</text>
+  <rect x="102" y="582" width="356" height="46" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="114" y="600" font-size="11" fill="#0f172a">learned CNN encoder ~1&#8211;5 ms  (robust)</text>
+  <text x="114" y="618" font-size="11" fill="#64748b">classic CV cheaper, brittle to DPI / HUD-scale / theme</text>
+
+  <!-- ============ SANDBOX BOXES ============ -->
+  <!-- 5 Companion injects (top-right) -->
+  <rect x="770" y="200" width="380" height="110" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <circle cx="794" cy="224" r="15" fill="#2e7d32"/><text x="794" y="229" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+  <text x="820" y="230" font-size="15" font-weight="700" fill="#0f172a">Companion injects (virtual input)</text>
+  <text x="820" y="248" font-size="11.5" fill="#64748b">in-sandbox — SendInput / virtual HID (device level)</text>
+  <rect x="782" y="262" width="356" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="794" y="284" font-size="11" fill="#0f172a">in-guest injection &lt; 1 ms · relative mouse-look via HID</text>
+
+  <!-- 6 Game (mid-right) -->
+  <rect x="770" y="380" width="380" height="110" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.6"/>
+  <circle cx="794" cy="404" r="15" fill="#64748b"/><text x="794" y="409" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+  <text x="820" y="410" font-size="15" font-weight="700" fill="#0f172a">Game processes + renders next frame</text>
+  <text x="820" y="428" font-size="11.5" fill="#64748b">free-running, un-pausable world</text>
+  <rect x="782" y="442" width="356" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="794" y="464" font-size="11" fill="#0f172a">frame time ~16.7 ms @ 60 fps  =  the reaction budget</text>
+
+  <!-- 1 Capture (bottom-right) -->
+  <rect x="770" y="545" width="380" height="110" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.6"/>
+  <circle cx="794" cy="569" r="15" fill="#e65100"/><text x="794" y="574" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="820" y="575" font-size="15" font-weight="700" fill="#0f172a">Capture frame</text>
+  <text x="820" y="593" font-size="11.5" fill="#64748b">sandbox framebuffer · WGC / DXGI Desktop Duplication</text>
+  <rect x="782" y="607" width="356" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="794" y="629" font-size="11" fill="#0f172a">on-GPU ~1&#8211;3 ms  +  GPU&#8594;CPU readback ~several ms</text>
+  <rect x="1034" y="549" width="106" height="21" rx="6" fill="#ffebee" stroke="#c62828"/><text x="1087" y="564" font-size="10" font-weight="700" fill="#c62828" text-anchor="middle">DOMINATES</text>
+
+  <!-- 4 Input channel (top crossing) -->
+  <rect x="546" y="230" width="148" height="74" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <text x="620" y="256" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">4 · Input channel</text>
+  <text x="620" y="273" font-size="11" fill="#64748b" text-anchor="middle">host &#8594; sandbox</text>
+  <text x="620" y="288" font-size="10.5" fill="#2e7d32" text-anchor="middle">vsock / shared-mem &lt; 1 ms</text>
+
+  <!-- center note -->
+  <rect x="536" y="345" width="168" height="30" rx="15" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="620" y="364" font-size="11" font-weight="700" fill="#2e7d32" text-anchor="middle">no application API in loop</text>
+
+  <!-- ============ ARROWS ============ -->
+  <!-- 6 -> 1  render (down, right col) -->
+  <line x1="960" y1="490" x2="960" y2="543" stroke="#64748b" stroke-width="2.2" marker-end="url(#aSlate)"/>
+  <rect x="915" y="505" width="90" height="24" rx="12" fill="#ffffff" stroke="#64748b"/><text x="960" y="521" font-size="11" fill="#0f172a" text-anchor="middle">render</text>
+
+  <!-- 5 -> 6  action injected (down) -->
+  <line x1="960" y1="310" x2="960" y2="378" stroke="#64748b" stroke-width="2.2" marker-end="url(#aSlate)"/>
+  <rect x="912" y="333" width="96" height="24" rx="12" fill="#ffffff" stroke="#64748b"/><text x="960" y="349" font-size="11" fill="#0f172a" text-anchor="middle">injected</text>
+
+  <!-- 1 -> 2 observation crossing (left) -->
+  <line x1="770" y1="598" x2="474" y2="586" stroke="#2e7d32" stroke-width="2.4" marker-end="url(#aGreen)"/>
+  <text x="620" y="568" font-size="9" font-style="italic" fill="#64748b" text-anchor="middle">crosses isolation boundary</text>
+  <rect x="518" y="572" width="204" height="42" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+  <text x="620" y="588" font-size="11" font-weight="700" fill="#0f172a" text-anchor="middle">observation: frame pixels</text>
+  <text x="620" y="604" font-size="10" fill="#64748b" text-anchor="middle">zero-copy &#8776;0 · encoded guest&#8594;host +10&#8211;30 ms</text>
+
+  <!-- 2 -> 3 state (up, left col) -->
+  <line x1="250" y1="520" x2="250" y2="332" stroke="#e65100" stroke-width="2.2" marker-end="url(#aOrange)"/>
+  <rect x="205" y="412" width="90" height="24" rx="12" fill="#ffffff" stroke="#e65100"/><text x="250" y="428" font-size="11" fill="#0f172a" text-anchor="middle">state</text>
+
+  <!-- 3 -> 4 -> 5 action crossing -->
+  <line x1="470" y1="268" x2="544" y2="267" stroke="#2e7d32" stroke-width="2.4" marker-end="url(#aGreen)"/>
+  <line x1="694" y1="267" x2="768" y2="256" stroke="#2e7d32" stroke-width="2.4" marker-end="url(#aGreen)"/>
+  <text x="620" y="222" font-size="9" font-style="italic" fill="#64748b" text-anchor="middle">crosses isolation boundary</text>
+
+  <!-- ============ BOTTOM BANNER ============ -->
+  <rect x="60" y="726" width="1120" height="74" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="80" y="752" font-size="13" font-weight="700" fill="#0f172a">&#931; end-to-end latency must fit the game's reaction budget &#8776; 16.7 ms / action (60 fps reactive) — small CNN fits; large VLM does not.</text>
+  <text x="80" y="772" font-size="11.5" fill="#64748b">Dominated by GPU&#8594;CPU readback + guest&#8594;host transfer and policy inference, NOT by input injection.</text>
+  <text x="80" y="790" font-size="11.5" fill="#64748b">One-way input, no ACK: observation is stale by the loop latency, so the action lands k frames later (off-by-k) &#8594; action-repeat / latency-aware training.</text>
+</svg>

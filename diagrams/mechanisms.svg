@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 790" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <rect x="0" y="0" width="1160" height="790" rx="16" fill="#fbfdff"/>
+
+  <!-- Title -->
+  <text x="24" y="40" font-size="18" font-weight="700" fill="#0f172a">Which sandbox boundary delivers parallel, isolated, game-compatible input?</text>
+  <text x="24" y="62" font-size="12.5" fill="#64748b">Four input-isolation mechanisms scored against the two hard requirements — parallel input and input the game actually reads (Raw Input / DirectInput).</text>
+
+  <!-- Column background tints (span rows) -->
+  <rect x="264" y="92" width="218" height="592" fill="#fff5f6"/>
+  <rect x="482" y="92" width="218" height="592" fill="#f4f9ff"/>
+  <rect x="700" y="92" width="218" height="592" fill="#f7f4fc"/>
+  <rect x="918" y="92" width="218" height="592" fill="#f4faf5"/>
+
+  <!-- ===================== HEADERS ===================== -->
+  <!-- col1 HDESK (rejected) -->
+  <rect x="264" y="92" width="218" height="100" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+  <text x="373" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">HDESK desktop object</text>
+  <text x="373" y="136" font-size="10.5" fill="#7f1d1d" text-anchor="middle">One input desktop per session;</text>
+  <text x="373" y="150" font-size="10.5" fill="#7f1d1d" text-anchor="middle">background = message-only</text>
+  <rect x="313" y="162" width="120" height="22" rx="11" fill="#c62828"/>
+  <text x="373" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">REJECTED</text>
+
+  <!-- col2 Separate session / VD -->
+  <rect x="482" y="92" width="218" height="100" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="591" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">Separate session / VD</text>
+  <text x="591" y="136" font-size="10.5" fill="#0d3c6e" text-anchor="middle">Own input desktop, queue &amp;</text>
+  <text x="591" y="150" font-size="10.5" fill="#0d3c6e" text-anchor="middle">logical HID per session</text>
+  <rect x="516" y="162" width="150" height="22" rx="11" fill="#1565c0"/>
+  <text x="591" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">VIABLE · LIGHTER</text>
+
+  <!-- col3 Virtual machine -->
+  <rect x="700" y="92" width="218" height="100" rx="8" fill="#ede7f6" stroke="#4527a0" stroke-width="1.5"/>
+  <text x="809" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">Virtual machine</text>
+  <text x="809" y="136" font-size="10.5" fill="#311b6e" text-anchor="middle">Guest OS + virtual HID =</text>
+  <text x="809" y="150" font-size="10.5" fill="#311b6e" text-anchor="middle">real hardware to the guest</text>
+  <rect x="749" y="162" width="120" height="22" rx="11" fill="#4527a0"/>
+  <text x="809" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">BEST FIT</text>
+
+  <!-- col4 Virtual HID driver -->
+  <rect x="918" y="92" width="218" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="1027" y="118" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle">Virtual HID driver</text>
+  <text x="1027" y="136" font-size="10.5" fill="#14532d" text-anchor="middle">Device-level injection;</text>
+  <text x="1027" y="150" font-size="10.5" fill="#14532d" text-anchor="middle">below the software marker</text>
+  <rect x="967" y="162" width="120" height="22" rx="11" fill="#2e7d32"/>
+  <text x="1027" y="177" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">HARD CASES</text>
+
+  <!-- Row axis label header -->
+  <text x="40" y="150" font-size="12" font-weight="700" fill="#64748b">CRITERION</text>
+
+  <!-- ===================== ROW GRID LINES ===================== -->
+  <line x1="24" y1="200" x2="1136" y2="200" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="24" y1="321" x2="1136" y2="321" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="24" y1="442" x2="1136" y2="442" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="24" y1="563" x2="1136" y2="563" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="24" y1="684" x2="1136" y2="684" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="264" y1="92" x2="264" y2="684" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- ===================== ROW 1: Parallel input stream? ===================== -->
+  <text x="40" y="255" font-size="12.5" font-weight="700" fill="#0f172a">Parallel input</text>
+  <text x="40" y="272" font-size="12.5" font-weight="700" fill="#0f172a">stream?</text>
+
+  <!-- HDESK: cross -->
+  <circle cx="373" cy="232" r="13" fill="#ffebee" stroke="#c62828" stroke-width="1.6"/>
+  <path d="M368,227 L378,237 M378,227 L368,237" stroke="#c62828" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="373" y="264" font-size="10" fill="#7f1d1d" text-anchor="middle">One input desktop per</text>
+  <text x="373" y="278" font-size="10" fill="#7f1d1d" text-anchor="middle">session — streams collide</text>
+  <!-- Session: check -->
+  <circle cx="591" cy="232" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M585,232 L590,238 L598,227" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="591" y="264" font-size="10" fill="#334155" text-anchor="middle">Own input desktop + queue,</text>
+  <text x="591" y="278" font-size="10" fill="#334155" text-anchor="middle">genuinely concurrent</text>
+  <!-- VM: check -->
+  <circle cx="809" cy="232" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M803,232 L808,238 L816,227" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="809" y="264" font-size="10" fill="#334155" text-anchor="middle">Separate guest input stack —</text>
+  <text x="809" y="278" font-size="10" fill="#334155" text-anchor="middle">zero cross-talk</text>
+  <!-- HID: check -->
+  <circle cx="1027" cy="232" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M1021,232 L1026,238 L1034,227" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1027" y="264" font-size="10" fill="#334155" text-anchor="middle">Device-level stream,</text>
+  <text x="1027" y="278" font-size="10" fill="#334155" text-anchor="middle">independent of host</text>
+
+  <!-- ===================== ROW 2: User undisturbed / isolated? ===================== -->
+  <text x="40" y="376" font-size="12.5" font-weight="700" fill="#0f172a">User undisturbed</text>
+  <text x="40" y="393" font-size="12.5" font-weight="700" fill="#0f172a">/ isolated?</text>
+
+  <!-- HDESK: cross -->
+  <circle cx="373" cy="353" r="13" fill="#ffebee" stroke="#c62828" stroke-width="1.6"/>
+  <path d="M368,348 L378,358 M378,348 L368,358" stroke="#c62828" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="373" y="385" font-size="10" fill="#7f1d1d" text-anchor="middle">Contends for the single</text>
+  <text x="373" y="399" font-size="10" fill="#7f1d1d" text-anchor="middle">input desktop — not isolated</text>
+  <!-- Session: warn -->
+  <circle cx="591" cy="353" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M591,347 L591,355" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="591" cy="359.5" r="1.5" fill="#b26a00"/>
+  <text x="591" y="385" font-size="10" fill="#334155" text-anchor="middle">Isolated input, but shares</text>
+  <text x="591" y="399" font-size="10" fill="#334155" text-anchor="middle">OS kernel, drivers &amp; FS</text>
+  <!-- VM: check -->
+  <circle cx="809" cy="353" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M803,353 L808,359 L816,348" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="809" y="385" font-size="10" fill="#334155" text-anchor="middle">Separate guest OS —</text>
+  <text x="809" y="399" font-size="10" fill="#334155" text-anchor="middle">strongest isolation</text>
+  <!-- HID: check -->
+  <circle cx="1027" cy="353" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M1021,353 L1026,359 L1034,348" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1027" y="385" font-size="10" fill="#334155" text-anchor="middle">Injects below host layer;</text>
+  <text x="1027" y="399" font-size="10" fill="#334155" text-anchor="middle">host input untouched</text>
+
+  <!-- ===================== ROW 3: Game sees it? ===================== -->
+  <text x="40" y="497" font-size="12.5" font-weight="700" fill="#0f172a">Game sees it?</text>
+  <text x="40" y="514" font-size="11" fill="#64748b">(Raw Input / DirectInput)</text>
+
+  <!-- HDESK: cross -->
+  <circle cx="373" cy="474" r="13" fill="#ffebee" stroke="#c62828" stroke-width="1.6"/>
+  <path d="M368,469 L378,479 M378,469 L368,479" stroke="#c62828" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="373" y="506" font-size="10" fill="#7f1d1d" text-anchor="middle">Only PostMessage reaches it;</text>
+  <text x="373" y="520" font-size="10" fill="#7f1d1d" text-anchor="middle">games read below the queue</text>
+  <!-- Session: check -->
+  <circle cx="591" cy="474" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M585,474 L590,480 L598,469" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="591" y="506" font-size="10" fill="#334155" text-anchor="middle">In-session SendInput feeds</text>
+  <text x="591" y="520" font-size="10" fill="#334155" text-anchor="middle">messages + async key state</text>
+  <!-- VM: check -->
+  <circle cx="809" cy="474" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M803,474 L808,480 L816,469" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="809" y="506" font-size="10" fill="#334155" text-anchor="middle">Virtual HID = real hardware;</text>
+  <text x="809" y="520" font-size="10" fill="#334155" text-anchor="middle">reaches exclusive DirectInput</text>
+  <!-- HID: check -->
+  <circle cx="1027" cy="474" r="13" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+  <path d="M1021,474 L1026,480 L1034,469" stroke="#2e7d32" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1027" y="506" font-size="10" fill="#334155" text-anchor="middle">Genuine device reports —</text>
+  <text x="1027" y="520" font-size="10" fill="#334155" text-anchor="middle">for exclusive-DI hard cases</text>
+
+  <!-- ===================== ROW 4: Cost ===================== -->
+  <text x="40" y="618" font-size="12.5" font-weight="700" fill="#0f172a">Cost</text>
+  <text x="40" y="635" font-size="11" fill="#64748b">(driver / hypervisor /</text>
+  <text x="40" y="649" font-size="11" fill="#64748b">session juggling)</text>
+
+  <!-- HDESK: warn (cheap but useless) -->
+  <circle cx="373" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M373,589 L373,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="373" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="373" y="627" font-size="10" fill="#7f1d1d" text-anchor="middle">Cheap — but delivers</text>
+  <text x="373" y="641" font-size="10" fill="#7f1d1d" text-anchor="middle">neither requirement</text>
+  <!-- Session: warn -->
+  <circle cx="591" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M591,589 L591,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="591" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="591" y="627" font-size="10" fill="#334155" text-anchor="middle">Client single-console limit;</text>
+  <text x="591" y="641" font-size="10" fill="#334155" text-anchor="middle">session juggling / RDPWrap</text>
+  <!-- VM: warn -->
+  <circle cx="809" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M809,589 L809,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="809" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="809" y="627" font-size="10" fill="#334155" text-anchor="middle">Hypervisor + guest OS +</text>
+  <text x="809" y="641" font-size="10" fill="#334155" text-anchor="middle">GPU passthrough weight</text>
+  <!-- HID: warn -->
+  <circle cx="1027" cy="595" r="13" fill="#fff8e1" stroke="#f9a825" stroke-width="1.6"/>
+  <path d="M1027,589 L1027,597" stroke="#b26a00" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="1027" cy="601.5" r="1.5" fill="#b26a00"/>
+  <text x="1027" y="627" font-size="10" fill="#334155" text-anchor="middle">Signed kernel driver;</text>
+  <text x="1027" y="641" font-size="10" fill="#334155" text-anchor="middle">maintenance risk</text>
+
+  <!-- ===================== LEGEND ===================== -->
+  <g transform="translate(24,700)">
+    <circle cx="10" cy="9" r="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+    <path d="M5.5,9 L9,12.5 L14,5.5" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="24" y="13" font-size="10.5" fill="#334155">meets requirement</text>
+    <circle cx="176" cy="9" r="8" fill="#fff8e1" stroke="#f9a825" stroke-width="1.4"/>
+    <path d="M176,4 L176,10" stroke="#b26a00" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="176" cy="13.5" r="1.3" fill="#b26a00"/>
+    <text x="190" y="13" font-size="10.5" fill="#334155">works, with caveats / cost</text>
+    <circle cx="372" cy="9" r="8" fill="#ffebee" stroke="#c62828" stroke-width="1.4"/>
+    <path d="M368,5 L376,13 M376,5 L368,13" stroke="#c62828" stroke-width="2" stroke-linecap="round"/>
+    <text x="386" y="13" font-size="10.5" fill="#334155">fails requirement</text>
+  </g>
+
+  <!-- ===================== VERDICT STRIP ===================== -->
+  <rect x="24" y="730" width="1112" height="46" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="40" y="750" font-size="11" fill="#0f172a"><tspan font-weight="700">Verdict:</tspan> HDESK is rejected — a background desktop takes only PostMessage, and games poll Raw Input / DirectInput / GetAsyncKeyState below the message queue.</text>
+  <text x="40" y="766" font-size="11" fill="#0f172a">A separate session / VD is the lighter-weight fit; a VM (host-side or with an in-guest virtual HID) gives the strongest isolation and reaches even exclusive DirectInput.</text>
+</svg>

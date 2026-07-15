@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 616" font-family="ui-sans-serif, Segoe UI, Roboto, sans-serif">
+  <rect x="2" y="2" width="976" height="612" rx="16" fill="#fbfdff" stroke="#e2e8f0"/>
+
+  <!-- Title -->
+  <text x="28" y="38" font-size="18" font-weight="700" fill="#0f172a">Input-reachability matrix — device/session input vs. app APIs</text>
+  <text x="28" y="60" font-size="12.5" fill="#64748b">Where each injection method enters the Windows input stack decides which read paths a game can actually observe.</text>
+
+  <!-- ===== Header row ===== -->
+  <!-- corner cell -->
+  <rect x="28" y="98" width="232" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="44" y="120" font-size="11" fill="#64748b">Injection method   &#8595;</text>
+  <text x="44" y="140" font-size="11" fill="#64748b">Game read path   &#8594;</text>
+
+  <!-- consumer column headers (app/target boxes) -->
+  <rect x="267" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="331" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Win32 msg</text>
+  <text x="331" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">queue</text>
+
+  <rect x="401" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="465" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Raw Input</text>
+  <text x="465" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">(WM_INPUT)</text>
+
+  <rect x="535" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="599" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">DirectInput</text>
+  <text x="599" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">(shared)</text>
+
+  <rect x="669" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="733" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">DirectInput</text>
+  <text x="733" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">(exclusive)</text>
+
+  <rect x="803" y="98" width="128" height="58" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="867" y="123" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">GetAsync-</text>
+  <text x="867" y="140" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">KeyState</text>
+
+  <!-- ===== ROW 1 : Window message ===== -->
+  <rect x="28" y="167" width="232" height="82" rx="6" fill="#fff3e0" stroke="#e65100"/>
+  <text x="44" y="200" font-size="13.5" font-weight="700" fill="#0f172a">Window message</text>
+  <text x="44" y="220" font-size="11" fill="#9a3412">PostMessage(WM_KEYDOWN&#8230;)</text>
+  <text x="44" y="237" font-size="11" fill="#9a3412">&#8594; one window's queue only</text>
+
+  <!-- r1 cells -->
+  <rect x="267" y="167" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="331" cy="203" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 324 203 L 329 209 L 339 196" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="331" y="235" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="401" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="465" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="459" y1="197" x2="471" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="459" y1="209" x2="471" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="465" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <rect x="535" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="599" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="593" y1="197" x2="605" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="593" y1="209" x2="605" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="599" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <rect x="669" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="733" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="727" y1="197" x2="739" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="727" y1="209" x2="739" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="733" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <rect x="803" y="167" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="867" cy="203" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="861" y1="197" x2="873" y2="209" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="861" y1="209" x2="873" y2="197" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="867" y="235" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">blind</text>
+
+  <!-- ===== ROW 2 : SendInput ===== -->
+  <rect x="28" y="255" width="232" height="82" rx="6" fill="#fff3e0" stroke="#e65100"/>
+  <text x="44" y="288" font-size="13.5" font-weight="700" fill="#0f172a">In-session SendInput</text>
+  <text x="44" y="308" font-size="11" fill="#9a3412">keybd_event / mouse_event</text>
+  <text x="44" y="325" font-size="11" fill="#9a3412">&#8594; RIT-level, same session</text>
+
+  <rect x="267" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="331" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 324 291 L 329 297 L 339 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="331" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="401" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="465" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 458 291 L 463 297 L 473 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="465" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches *</text>
+
+  <rect x="535" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="599" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 592 291 L 597 297 L 607 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="599" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="669" y="255" width="128" height="82" rx="6" fill="#fdecef" stroke="#e2e8f0"/>
+  <circle cx="733" cy="291" r="14" fill="#ffebee" stroke="#c62828"/>
+  <line x1="727" y1="285" x2="739" y2="297" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="727" y1="297" x2="739" y2="285" stroke="#c62828" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="733" y="323" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="middle">bypassed</text>
+
+  <rect x="803" y="255" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="867" cy="291" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 860 291 L 865 297 L 875 284" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="867" y="323" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <!-- ===== ROW 3 : Virtual HID ===== -->
+  <rect x="28" y="343" width="232" height="82" rx="6" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="44" y="376" font-size="13.5" font-weight="700" fill="#0f172a">Virtual HID device</text>
+  <text x="44" y="396" font-size="11" fill="#1b5e20">hypervisor scancode / kernel HID</text>
+  <text x="44" y="413" font-size="11" fill="#1b5e20">&#8594; below the marker, as hardware</text>
+
+  <rect x="267" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="331" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 324 379 L 329 385 L 339 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="331" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="401" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="465" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 458 379 L 463 385 L 473 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="465" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="535" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="599" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 592 379 L 597 385 L 607 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="599" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="669" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="733" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 726 379 L 731 385 L 741 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="733" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <rect x="803" y="343" width="128" height="82" rx="6" fill="#eef7f0" stroke="#e2e8f0"/>
+  <circle cx="867" cy="379" r="14" fill="#e8f5e9" stroke="#2e7d32"/>
+  <path d="M 860 379 L 865 385 L 875 372" fill="none" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="867" y="411" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="middle">reaches</text>
+
+  <!-- reachability ladder note (left, under method column) -->
+  <text x="28" y="448" font-size="11" fill="#64748b">Reachability climbs down the stack:  PostMessage  &#60;  in-session SendInput  &#60;  real / virtual-HID device.</text>
+
+  <!-- ===== Caption ===== -->
+  <rect x="28" y="460" width="924" height="56" rx="8" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="48" y="484" font-size="13" font-weight="700" fill="#14532d">A game that reads Raw Input / exclusive DirectInput needs real (or virtual-HID) device input —</text>
+  <text x="48" y="504" font-size="13" font-weight="700" fill="#14532d">not window messages, not the app's API.</text>
+
+  <!-- footnote -->
+  <text x="28" y="540" font-size="10.5" fill="#64748b">* SendInput does surface in WM_INPUT, but injected events are flagged (LLKHF_INJECTED, RAWINPUTHEADER.hDevice = 0) and relative-mouse deltas are unreliable,</text>
+  <text x="28" y="556" font-size="10.5" fill="#64748b">so Raw Input / anti-cheat can distinguish and reject it. Exclusive-mode DirectInput reads device state directly and ignores the message queue entirely.</text>
+  <text x="28" y="572" font-size="10.5" fill="#64748b">A real or virtual HID device enters at the device / RIT layer below the injected marker, so it is indistinguishable from hardware to every read path.</text>
+</svg>
