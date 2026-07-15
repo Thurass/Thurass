@@ -1,20 +1,20 @@
 # IMPLEMENTATION — Parallel Isolated Input Forwarding
 
 **Live implementation log + decision record.** Update this file as you work.
-**Repo root:** `/home/user/Thurass`
-**This file lives in:** `/home/user/Thurass/metaprogram/docs/incoming/VM/IMPLEMENTATION.md`
+**Repo root:** `C:\UserProgram\MetaProgram`
+**This file lives in:** `C:\UserProgram\MetaProgram\docs\incoming\VM\IMPLEMENTATION.md`
 **Branch:** `claude/virtual-desktop-input-forwarding-xmz6vf`
 
 Design source of truth (read before touching this file):
-- `/home/user/Thurass/metaprogram/docs/incoming/VM/PARALLEL-INPUT-FORWARDING.md` — the corrected design.
-- `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` — mission, settled facts, roadmap, pitfalls (§ refs below point here).
-- Diagrams: `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/architecture.svg`,
-  `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/mechanisms.svg`,
-  `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/reachability.svg`,
-  `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/loop.svg`.
+- `C:\UserProgram\MetaProgram\docs\incoming\VM\PARALLEL-INPUT-FORWARDING.md` — the corrected design.
+- `C:\UserProgram\MetaProgram\docs\incoming\VM\HANDOFF.md` — mission, settled facts, roadmap, pitfalls (§ refs below point here).
+- Diagrams: `C:\UserProgram\MetaProgram\docs\incoming\VM\diagrams\architecture.svg`,
+  `C:\UserProgram\MetaProgram\docs\incoming\VM\diagrams\mechanisms.svg`,
+  `C:\UserProgram\MetaProgram\docs\incoming\VM\diagrams\reachability.svg`,
+  `C:\UserProgram\MetaProgram\docs\incoming\VM\diagrams\loop.svg`.
 
 > **Path convention.** Document/diagram references are full absolute paths under
-> `/home/user/Thurass/metaprogram/docs/incoming/VM/`. Planned **implementation
+> `C:\UserProgram\MetaProgram\docs\incoming\VM\`. Planned **implementation
 > code** uses `<CODE_ROOT>/…` — a to-be-decided location (this docs folder is
 > *not* the code root; pick `<CODE_ROOT>` in Phase 0, see §3).
 
@@ -23,7 +23,7 @@ Design source of truth (read before touching this file):
 ## 1. Decision record (D1–D7)
 
 Fill in **Choice** + **Rationale** + **Date** as each is made. Defaults/recommendations
-are from `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §5–§6.
+are from `C:\UserProgram\MetaProgram\docs\incoming\VM\HANDOFF.md` §5–§6.
 
 | # | Decision | Options | Recommended default | **Choice** | Rationale / date |
 |---|---|---|---|---|---|
@@ -35,7 +35,7 @@ are from `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §5–§6.
 | D6 | Policy | scripted (bring-up) → learned CNN → VLM | scripted → **CNN** | _TBD_ | _____ |
 | D7 | Guest OS | Windows 11 (run Java Minecraft) | **Windows 11** | _TBD_ | _____ |
 
-**Consequences to honor once chosen** (see `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §8):
+**Consequences to honor once chosen** (see `C:\UserProgram\MetaProgram\docs\incoming\VM\HANDOFF.md` §8):
 - D3 = `SendInput` alone → Minecraft look-motion only works with the game's
   "Raw Input" option OFF; **virtual HID required** for the default (Raw Input ON).
 - D1 = separate session → client single-console limit + disconnected-session
@@ -63,7 +63,7 @@ are from `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §5–§6.
 
 > `<CODE_ROOT>` is the implementation-code root — **decide it in Phase 0** and
 > record it here. It is **not** this docs folder
-> (`/home/user/Thurass/metaprogram/docs/incoming/VM/`); e.g. `/home/user/Thurass/metaprogram/VM/`
+> (`C:\UserProgram\MetaProgram\docs\incoming\VM\`); e.g. `C:\UserProgram\MetaProgram\VM\`
 > or a dedicated repo. **Chosen `<CODE_ROOT>`:** _TBD_
 
 - `<CODE_ROOT>/host/` — process tracker (capture client), AI system, channel client.
@@ -81,7 +81,7 @@ are from `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §5–§6.
 - [ ] Record D1–D7 (§1 above) and environment facts (§2).
 - [ ] Create the directory layout in §3.
 - [ ] Provision the VM (D1/D2/D7); install the guest OS; install guest additions/tools.
-- [ ] Pin guest resolution; disable DPI scaling (see `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §8).
+- [ ] Pin guest resolution; disable DPI scaling (see `C:\UserProgram\MetaProgram\docs\incoming\VM\HANDOFF.md` §8).
 - [ ] Host + guest build toolchains produce a hello-world each.
 - [ ] Build `<CODE_ROOT>/tools/input-probe/` and run it in the guest.
 
@@ -100,7 +100,7 @@ input-probe window shows live keyboard/mouse events when you type in the guest.
 - [ ] Define the wire protocol (key/mouse action records) in `<CODE_ROOT>/common/`.
 - [ ] In-guest companion (`<CODE_ROOT>/guest/`) receives a "press A" action
       and injects via `SendInput` (keydown + keyup, correct scancode; use extended
-      `e0` codes where needed — `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §8).
+      `e0` codes where needed — `C:\UserProgram\MetaProgram\docs\incoming\VM\HANDOFF.md` §8).
 - [ ] Host client (`<CODE_ROOT>/host/`) sends the action over the channel.
 
 **Acceptance (all three):**
@@ -116,7 +116,7 @@ input-probe window shows live keyboard/mouse events when you type in the guest.
 
 ---
 
-## 6. Later phases (detail in `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` §7)
+## 6. Later phases (detail in `C:\UserProgram\MetaProgram\docs\incoming\VM\HANDOFF.md` §7)
 
 - **Phase 2 — Mouse-look:** guest virtual **relative** HID; accept = camera pans
   in Minecraft with **Raw Input ON** and the probe shows genuine `WM_INPUT`
