@@ -2,13 +2,16 @@
 
 **Audience:** the next agent (or engineer) picking this up cold.
 **Repo root:** `/home/user/Thurass`
+**This package (docs) lives in:** `/home/user/Thurass/metaprogram/docs/incoming/VM/`
 **Repo branch:** `claude/virtual-desktop-input-forwarding-xmz6vf`
 **Status:** design-only schematic complete + verified; **no implementation code yet**.
 **Platform target:** Windows 11, C++ (host + in-sandbox companion).
 
-> **All document references in this file are full absolute paths** under the
-> repo root `/home/user/Thurass`. Adjust the root prefix if the repo is cloned
-> elsewhere.
+> **All document/diagram references in this file are full absolute paths** under
+> `/home/user/Thurass/metaprogram/docs/incoming/VM/`. Adjust the prefix if the
+> repo is cloned elsewhere. Planned *implementation code* paths use `<CODE_ROOT>/`
+> — a to-be-decided location that is **not** this docs folder (see
+> `/home/user/Thurass/metaprogram/docs/incoming/VM/IMPLEMENTATION.md` §3).
 
 Read this file top-to-bottom once, then start at [§7 Implementation roadmap](#7-implementation-roadmap).
 Everything here is distilled from the design docs in this repo — trust those as
@@ -53,7 +56,7 @@ An earlier pass proposed a **Win32 desktop object (`HDESK`, `CreateDesktopEx`)**
 
 The requirement is met **one level up**: a **separate interactive session** or a
 **VM**. `HDESK` is retained only as a "why-not" reference at
-`/home/user/Thurass/VIRTUAL-DESKTOP-INPUT-FORWARDING.md`.
+`/home/user/Thurass/metaprogram/docs/incoming/VM/VIRTUAL-DESKTOP-INPUT-FORWARDING.md`.
 
 ---
 
@@ -123,7 +126,7 @@ These were cross-checked against vendor docs and adversarially reviewed. Treat a
 - **Sandbox:** `target app` and `process companion` (the injector).
 - **Two channels:** observation (sandbox frames → host tracker) and input
   (host AI → sandbox companion → injected input).
-- The full-resolution diagram set is in `/home/user/Thurass/diagrams/` (see §9).
+- The full-resolution diagram set is in `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/` (see §9).
 
 ---
 
@@ -268,27 +271,27 @@ tiny **input-probe** utility early (a guest app that prints `WM_INPUT` +
 ## 9. Repo map & references
 
 **Design docs (source of truth):**
-- `/home/user/Thurass/PARALLEL-INPUT-FORWARDING.md` — **the corrected design** (read first).
-- `/home/user/Thurass/PARALLEL-INPUT-FORWARDING.html` — self-contained visual companion (same content + diagrams).
-- `/home/user/Thurass/VIRTUAL-DESKTOP-INPUT-FORWARDING.md` — the HDESK "why-not" reference (superseded framing; still accurate about desktop objects).
-- `/home/user/Thurass/VIRTUAL-DESKTOP-INPUT-FORWARDING.html` — visual companion for the HDESK reference.
-- `/home/user/Thurass/HANDOFF.md` — this file.
-- `/home/user/Thurass/IMPLEMENTATION.md` — the live implementation log / decision record (start here to record progress).
+- `/home/user/Thurass/metaprogram/docs/incoming/VM/PARALLEL-INPUT-FORWARDING.md` — **the corrected design** (read first).
+- `/home/user/Thurass/metaprogram/docs/incoming/VM/PARALLEL-INPUT-FORWARDING.html` — self-contained visual companion (same content + diagrams).
+- `/home/user/Thurass/metaprogram/docs/incoming/VM/VIRTUAL-DESKTOP-INPUT-FORWARDING.md` — the HDESK "why-not" reference (superseded framing; still accurate about desktop objects).
+- `/home/user/Thurass/metaprogram/docs/incoming/VM/VIRTUAL-DESKTOP-INPUT-FORWARDING.html` — visual companion for the HDESK reference.
+- `/home/user/Thurass/metaprogram/docs/incoming/VM/HANDOFF.md` — this file.
+- `/home/user/Thurass/metaprogram/docs/incoming/VM/IMPLEMENTATION.md` — the live implementation log / decision record (start here to record progress).
 - `/home/user/Thurass/SCHEMATIC.md` — **unrelated** (an iLOQ/TypeScript schematic; ignore for this task).
 
 **Diagrams (hand-authored SVG):**
 - Corrected design:
-  - `/home/user/Thurass/diagrams/architecture.svg`
-  - `/home/user/Thurass/diagrams/mechanisms.svg`
-  - `/home/user/Thurass/diagrams/reachability.svg`
-  - `/home/user/Thurass/diagrams/loop.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/architecture.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/mechanisms.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/reachability.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/loop.svg`
 - HDESK reference:
-  - `/home/user/Thurass/diagrams/taxonomy.svg`
-  - `/home/user/Thurass/diagrams/topology.svg`
-  - `/home/user/Thurass/diagrams/input-desktop.svg`
-  - `/home/user/Thurass/diagrams/injection-modes.svg`
-  - `/home/user/Thurass/diagrams/sequence.svg`
-  - `/home/user/Thurass/diagrams/lifecycle.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/taxonomy.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/topology.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/input-desktop.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/injection-modes.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/sequence.svg`
+  - `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/lifecycle.svg`
 
 **Key APIs / tooling to look up (Microsoft Learn + vendor docs):**
 - Input read/inject: `RegisterRawInputDevices` / `WM_INPUT`, `GetRawInputData`,
@@ -321,9 +324,9 @@ tiny **input-probe** utility early (a guest app that prints `WM_INPUT` +
 
 ## 11. First action for the receiving agent
 
-1. Read `/home/user/Thurass/PARALLEL-INPUT-FORWARDING.md` and skim the four
-   corrected diagrams in `/home/user/Thurass/diagrams/`.
-2. Record decisions D1–D7 (§6) in `/home/user/Thurass/IMPLEMENTATION.md` (skeleton
+1. Read `/home/user/Thurass/metaprogram/docs/incoming/VM/PARALLEL-INPUT-FORWARDING.md` and skim the four
+   corrected diagrams in `/home/user/Thurass/metaprogram/docs/incoming/VM/diagrams/`.
+2. Record decisions D1–D7 (§6) in `/home/user/Thurass/metaprogram/docs/incoming/VM/IMPLEMENTATION.md` (skeleton
    already committed — fill in the choices).
 3. Do **Phase 0 + Phase 1** (§7) — get one synthetic keystroke to register in the
    guest's input-probe and in Minecraft. That single result de-risks the whole
